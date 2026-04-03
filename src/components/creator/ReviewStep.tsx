@@ -68,6 +68,15 @@ const ReviewStep = ({ config }: Props) => {
                 {style?.emoji} {style?.label}
               </span>
             </div>
+            <div className="h-px bg-border" />
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-sans text-muted-foreground uppercase tracking-wider">
+                Mode
+              </span>
+              <span className="font-sans font-medium text-sm text-foreground">
+                {config.mode === "pro" ? "🎨 Pro Florist" : "✨ Guided"}
+              </span>
+            </div>
             {config.recipient.relationship && (
               <>
                 <div className="h-px bg-border" />
@@ -85,7 +94,9 @@ const ReviewStep = ({ config }: Props) => {
         </div>
 
         <p className="text-center text-xs text-muted-foreground font-sans">
-          Tap "Generate bouquet" to create something unique ✨
+          {config.mode === "pro"
+            ? "You'll arrange everything by hand in the studio 🎨"
+            : "We'll compose something beautiful for you ✨"}
         </p>
       </div>
     </div>
