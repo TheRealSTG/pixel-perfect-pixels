@@ -103,6 +103,13 @@ const CreatePage = () => {
             </button>
           ) : (
             <button
+              onClick={() => {
+                if (config?.mode === "pro") {
+                  navigate("/studio", { state: { config } });
+                } else if (config) {
+                  navigate("/bouquet", { state: { config } });
+                }
+              }}
               className="px-8 py-3 bg-accent text-accent-foreground rounded-full font-sans font-medium text-sm hover:opacity-90 transition-opacity shadow-md"
             >
               {config?.mode === "pro" ? "Open studio 🎨" : "Create bouquet ✨"}
