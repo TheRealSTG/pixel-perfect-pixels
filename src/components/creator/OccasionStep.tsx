@@ -19,14 +19,18 @@ const OccasionStep = ({ selected, onSelect }: Props) => (
         <button
           key={occ.id}
           onClick={() => onSelect(occ.id)}
-          className={`flex items-center gap-3 px-5 py-4 rounded-xl border-2 transition-all text-left ${
+          className={`group flex items-center gap-3 px-5 py-4 rounded-2xl transition-all duration-300 ease-out text-left ${
             selected === occ.id
-              ? "border-primary bg-primary/5 shadow-sm"
-              : "border-border hover:border-primary/30 bg-card"
+              ? "bg-primary/10 shadow-[0_2px_16px_-4px_hsl(var(--primary)/0.25)] scale-[1.02]"
+              : "bg-transparent hover:bg-muted/60 hover:scale-[1.02] active:scale-[0.98]"
           }`}
         >
-          <span className="text-2xl">{occ.emoji}</span>
-          <span className="font-sans font-medium text-sm text-foreground">{occ.label}</span>
+          <span className={`text-2xl transition-transform duration-300 ${
+            selected === occ.id ? "scale-110" : "group-hover:scale-110"
+          }`}>{occ.emoji}</span>
+          <span className={`font-sans font-medium text-sm transition-colors duration-300 ${
+            selected === occ.id ? "text-foreground" : "text-muted-foreground group-hover:text-foreground"
+          }`}>{occ.label}</span>
         </button>
       ))}
     </div>

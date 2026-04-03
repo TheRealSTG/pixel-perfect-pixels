@@ -30,7 +30,7 @@ const RecipientStep = ({ details, onChange }: Props) => {
             value={details.name}
             onChange={(e) => update("name", e.target.value)}
             placeholder="e.g. Priya"
-            className="w-full px-4 py-3 rounded-xl border-2 border-border bg-card font-sans text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
+            className="w-full px-4 py-3 rounded-2xl border-0 bg-muted/40 font-sans text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:bg-muted/60 transition-all duration-300"
           />
         </div>
 
@@ -45,7 +45,7 @@ const RecipientStep = ({ details, onChange }: Props) => {
             value={details.relationship || ""}
             onChange={(e) => update("relationship", e.target.value)}
             placeholder="e.g. partner, mum, best friend"
-            className="w-full px-4 py-3 rounded-xl border-2 border-border bg-card font-sans text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
+            className="w-full px-4 py-3 rounded-2xl border-0 bg-muted/40 font-sans text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:bg-muted/60 transition-all duration-300"
           />
         </div>
 
@@ -60,7 +60,7 @@ const RecipientStep = ({ details, onChange }: Props) => {
             value={details.favouriteColour || ""}
             onChange={(e) => update("favouriteColour", e.target.value)}
             placeholder="e.g. blue, sunflower yellow"
-            className="w-full px-4 py-3 rounded-xl border-2 border-border bg-card font-sans text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
+            className="w-full px-4 py-3 rounded-2xl border-0 bg-muted/40 font-sans text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:bg-muted/60 transition-all duration-300"
           />
         </div>
 
@@ -75,7 +75,7 @@ const RecipientStep = ({ details, onChange }: Props) => {
             value={details.city || ""}
             onChange={(e) => update("city", e.target.value)}
             placeholder="e.g. Mumbai, London"
-            className="w-full px-4 py-3 rounded-xl border-2 border-border bg-card font-sans text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
+            className="w-full px-4 py-3 rounded-2xl border-0 bg-muted/40 font-sans text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:bg-muted/60 transition-all duration-300"
           />
         </div>
       </div>

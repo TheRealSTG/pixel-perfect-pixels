@@ -23,19 +23,23 @@ const MoodStep = ({ selected, onSelect }: Props) => (
       This sets the emotional tone for the flowers and the card.
     </p>
 
-    <div className="flex flex-col gap-3 max-w-sm mx-auto">
+    <div className="flex flex-col gap-2 max-w-sm mx-auto">
       {moods.map((m) => (
         <button
           key={m.id}
           onClick={() => onSelect(m.id)}
-          className={`flex items-center gap-4 px-6 py-4 rounded-xl border-2 transition-all text-left ${
+          className={`group flex items-center gap-4 px-6 py-4 rounded-2xl transition-all duration-300 ease-out text-left ${
             selected === m.id
-              ? "border-primary bg-primary/5 shadow-sm"
-              : "border-border hover:border-primary/30 bg-card"
+              ? "bg-primary/10 shadow-[0_2px_16px_-4px_hsl(var(--primary)/0.25)] scale-[1.02]"
+              : "bg-transparent hover:bg-muted/60 hover:scale-[1.01] active:scale-[0.98]"
           }`}
         >
-          <span className="text-2xl">{moodEmojis[m.id]}</span>
-          <span className="font-sans font-medium text-foreground">{m.label}</span>
+          <span className={`text-2xl transition-transform duration-300 ${
+            selected === m.id ? "scale-110" : "group-hover:scale-110"
+          }`}>{moodEmojis[m.id]}</span>
+          <span className={`font-sans font-medium transition-colors duration-300 ${
+            selected === m.id ? "text-foreground" : "text-muted-foreground group-hover:text-foreground"
+          }`}>{m.label}</span>
         </button>
       ))}
     </div>
