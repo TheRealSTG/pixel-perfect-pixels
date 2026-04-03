@@ -3,10 +3,17 @@ import { composeBouquet } from "@/lib/bouquet-engine";
 import BouquetCanvas from "@/components/flowers/BouquetCanvas";
 import type { BouquetConfig } from "@/lib/bouquet-data";
 
+interface LocationState {
+  config: BouquetConfig;
+  customFlowers?: Parameters<typeof BouquetCanvas>[0]["flowers"];
+}
+
 const BouquetResult = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const config = location.state?.config as BouquetConfig | undefined;
+  const state = location.state as LocationState | undefined;
+  const config = state?.config;
+  const customFlowers = state?.customFlowers;
 
   if (!config) {
     return (
