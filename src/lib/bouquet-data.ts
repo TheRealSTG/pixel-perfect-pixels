@@ -43,15 +43,16 @@ export const artStyles = [
   {
     id: "watercolour",
     label: "Watercolour",
-    description: "Dreamy, painterly AI-generated artwork",
+    description: "Dreamy, painterly soft-wash artwork",
     emoji: "🖌️",
-    speed: "20-60s",
+    speed: "Instant",
   },
 ] as const;
 
 export type Occasion = (typeof occasions)[number]["id"];
 export type Mood = (typeof moods)[number]["id"];
 export type ArtStyle = (typeof artStyles)[number]["id"];
+export type CreationMode = "guided" | "pro";
 
 export interface RecipientDetails {
   name: string;
@@ -65,4 +66,5 @@ export interface BouquetConfig {
   mood: Mood;
   artStyle: ArtStyle;
   recipient: RecipientDetails;
+  mode: CreationMode;
 }

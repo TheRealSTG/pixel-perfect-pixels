@@ -4,10 +4,11 @@ import OccasionStep from "@/components/creator/OccasionStep";
 import MoodStep from "@/components/creator/MoodStep";
 import RecipientStep from "@/components/creator/RecipientStep";
 import StyleStep from "@/components/creator/StyleStep";
+import ModeStep from "@/components/creator/ModeStep";
 import ReviewStep from "@/components/creator/ReviewStep";
-import type { BouquetConfig, Occasion, Mood, ArtStyle, RecipientDetails } from "@/lib/bouquet-data";
+import type { BouquetConfig, Occasion, Mood, ArtStyle, CreationMode, RecipientDetails } from "@/lib/bouquet-data";
 
-const steps = ["Occasion", "Mood", "Recipient", "Style", "Review"];
+const steps = ["Occasion", "Mood", "Recipient", "Style", "Mode", "Review"];
 
 const CreatePage = () => {
   const navigate = useNavigate();
@@ -15,6 +16,7 @@ const CreatePage = () => {
   const [occasion, setOccasion] = useState<Occasion | null>(null);
   const [mood, setMood] = useState<Mood | null>(null);
   const [artStyle, setArtStyle] = useState<ArtStyle | null>(null);
+  const [mode, setMode] = useState<CreationMode | null>(null);
   const [recipient, setRecipient] = useState<RecipientDetails>({ name: "" });
 
   const canGoNext = () => {
@@ -23,13 +25,14 @@ const CreatePage = () => {
       case 1: return mood !== null;
       case 2: return recipient.name.trim().length > 0;
       case 3: return artStyle !== null;
+      case 4: return mode !== null;
       default: return true;
     }
   };
 
   const config: BouquetConfig | null =
-    occasion && mood && artStyle && recipient.name
-      ? { occasion, mood, artStyle, recipient }
+    occasion && mood && artStyle && mode && recipient.name
+      ? { occasion, mood, artStyle, recipient, mode }
       : null;
 
   return (
@@ -78,7 +81,10 @@ const CreatePage = () => {
           {currentStep === 3 && (
             <StyleStep selected={artStyle} onSelect={setArtStyle} />
           )}
-          {currentStep === 4 && config && (
+          {currentStep === 4 && (
+            <ModeStep selected={mode} onSelect={setMode} />
+          )}
+          {currentStep === 5 && config && (
             <ReviewStep config={config} />
           )}
         </div>
@@ -99,7 +105,7 @@ const CreatePage = () => {
             <button
               className="px-8 py-3 bg-accent text-accent-foreground rounded-full font-sans font-medium text-sm hover:opacity-90 transition-opacity shadow-md"
             >
-              Generate bouquet ✨
+              {config?.mode === "pro" ? "Open studio 🎨" : "Create bouquet ✨"}
             </button>
           )}
         </div>

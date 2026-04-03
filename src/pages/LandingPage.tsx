@@ -57,7 +57,7 @@ const LandingPage = () => {
               <span className="italic text-accent">beautiful.</span>
             </h2>
             <p className="text-lg text-muted-foreground font-sans leading-relaxed mb-8">
-              Generate a personalised digital bouquet and send it to someone you
+              Create a personalised digital bouquet and send it to someone you
               care about — free, forever.
             </p>
           </div>
