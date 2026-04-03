@@ -31,7 +31,9 @@ const BouquetResult = () => {
     );
   }
 
-  const composition = composeBouquet(config.occasion, config.mood, config.artStyle, config.recipient.name);
+  const composition = customFlowers
+    ? { flowers: customFlowers, wrapColor: "#E8DDD0", wrapAccent: "#D4C8B8", backgroundColor: "#F8F5F0" }
+    : composeBouquet(config.occasion, config.mood, config.artStyle, config.recipient.name);
 
   return (
     <div className="min-h-screen bg-background">
