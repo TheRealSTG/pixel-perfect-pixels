@@ -156,3 +156,18 @@
 .animate-petal-drift {
   animation: petal-drift 6s ease-in-out infinite;
 }
+
+@keyframes bouquet-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
