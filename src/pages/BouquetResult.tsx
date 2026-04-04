@@ -20,10 +20,8 @@ const BouquetResult = () => {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <p className="text-muted-foreground font-sans mb-4">No bouquet found.</p>
-          <button
-            onClick={() => navigate("/create")}
-            className="px-6 py-2.5 bg-primary text-primary-foreground rounded-full font-sans text-sm hover:opacity-90 transition-opacity"
-          >
+          <button onClick={() => navigate("/create")}
+            className="px-6 py-2.5 bg-primary text-primary-foreground rounded-full font-sans text-sm hover:opacity-90 transition-opacity">
             Create one
           </button>
         </div>
@@ -33,16 +31,13 @@ const BouquetResult = () => {
 
   const composition = customFlowers
     ? { flowers: customFlowers, wrapColor: "#E8DDD0", wrapAccent: "#D4C8B8", backgroundColor: "#F8F5F0" }
-    : composeBouquet(config.occasion, config.mood, config.artStyle, config.recipient.name);
+    : composeBouquet(config.occasion, config.mood, config.artStyle, config.recipient.name, config.recipient.favouriteColour);
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <nav className="flex items-center justify-between px-6 py-4 max-w-3xl mx-auto">
-        <button
-          onClick={() => navigate("/create")}
-          className="text-sm font-sans text-muted-foreground hover:text-foreground transition-colors"
-        >
+        <button onClick={() => navigate("/create")}
+          className="text-sm font-sans text-muted-foreground hover:text-foreground transition-colors">
           ← New bouquet
         </button>
         <h1 className="text-xl font-serif font-semibold text-foreground">Bouquet</h1>
@@ -50,7 +45,6 @@ const BouquetResult = () => {
       </nav>
 
       <main className="max-w-3xl mx-auto px-6 pb-20">
-        {/* Recipient greeting */}
         <div className="text-center mb-8 animate-fade-up">
           <p className="text-sm font-sans text-muted-foreground tracking-wide mb-2">A bouquet for</p>
           <h2 className="text-3xl sm:text-4xl font-serif font-semibold text-foreground">
@@ -63,7 +57,6 @@ const BouquetResult = () => {
           )}
         </div>
 
-        {/* Bouquet */}
         <div className="animate-fade-up-delay-1">
           <BouquetCanvas
             flowers={composition.flowers}
@@ -74,22 +67,16 @@ const BouquetResult = () => {
           />
         </div>
 
-        {/* Details */}
         <div className="mt-10 text-center animate-fade-up-delay-2">
           <p className="text-sm text-muted-foreground font-sans italic mb-6">
             Made with love, free forever 🌸
           </p>
-
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <button
-              onClick={() => navigate("/create")}
-              className="px-8 py-3 bg-primary text-primary-foreground rounded-full font-sans font-medium text-sm hover:opacity-90 transition-opacity shadow-md"
-            >
+            <button onClick={() => navigate("/create")}
+              className="px-8 py-3 bg-primary text-primary-foreground rounded-full font-sans font-medium text-sm hover:opacity-90 transition-opacity shadow-md">
               Create another
             </button>
-            <button
-              className="px-8 py-3 bg-secondary text-secondary-foreground rounded-full font-sans font-medium text-sm hover:opacity-80 transition-opacity"
-            >
+            <button className="px-8 py-3 bg-secondary text-secondary-foreground rounded-full font-sans font-medium text-sm hover:opacity-80 transition-opacity">
               Share 💌
             </button>
           </div>

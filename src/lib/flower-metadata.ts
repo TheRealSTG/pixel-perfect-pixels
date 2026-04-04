@@ -1,0 +1,170 @@
+import type { FlowerType } from "@/components/flowers/FlowerSVGs";
+
+export interface FlowerInfo {
+  type: FlowerType;
+  label: string;
+  emoji: string;
+  defaultColor: string;
+  defaultAccent: string;
+  birthMonth: string;
+  meaning: string;
+  careTip: string;
+  funFact: string;
+  pairsWith: FlowerType[];
+  colorTheory: string;
+}
+
+export const flowerMetadata: Record<FlowerType, FlowerInfo> = {
+  rose: {
+    type: "rose",
+    label: "Rose",
+    emoji: "🌹",
+    defaultColor: "#E8A0B4",
+    defaultAccent: "#D4708A",
+    birthMonth: "June",
+    meaning: "Love, gratitude, and admiration. Red roses symbolize deep love, while pink ones convey grace.",
+    careTip: "Cut stems at a 45° angle underwater and change water every 2 days for maximum vase life.",
+    funFact: "The world's oldest living rose is over 1,000 years old, growing on the wall of Hildesheim Cathedral in Germany.",
+    pairsWith: ["peony", "eucalyptus", "ranunculus"],
+    colorTheory: "Pairs beautifully with complementary greens and analogous pinks. Avoid clashing with orange tones.",
+  },
+  peony: {
+    type: "peony",
+    label: "Peony",
+    emoji: "🌸",
+    defaultColor: "#F5E1E8",
+    defaultAccent: "#E8C4D0",
+    birthMonth: "April",
+    meaning: "Prosperity, romance, and bashfulness. In Chinese culture, it's the 'king of flowers'.",
+    careTip: "Buy peonies as tight buds — they'll bloom beautifully over 5-7 days in a warm room.",
+    funFact: "Peonies can live for over 100 years! Some gardens in China have peony plants that are centuries old.",
+    pairsWith: ["rose", "ranunculus", "eucalyptus"],
+    colorTheory: "Blush peonies create soft monochromatic palettes. Mix with deeper burgundy for rich contrast.",
+  },
+  tulip: {
+    type: "tulip",
+    label: "Tulip",
+    emoji: "🌷",
+    defaultColor: "#E06080",
+    defaultAccent: "#C84060",
+    birthMonth: "March",
+    meaning: "Perfect love and rebirth. In the 1600s, tulips were more valuable than gold in the Netherlands.",
+    careTip: "Tulips continue to grow in the vase! Use a shallow vase and cold water to slow growth.",
+    funFact: "During 'Tulip Mania' in 1637, a single tulip bulb sold for more than a canal house in Amsterdam.",
+    pairsWith: ["hyacinth", "daisy", "eucalyptus"],
+    colorTheory: "Bold tulips anchor arrangements. Mix warm reds with cool purples for dynamic tension.",
+  },
+  sunflower: {
+    type: "sunflower",
+    label: "Sunflower",
+    emoji: "🌻",
+    defaultColor: "#F4C430",
+    defaultAccent: "#E0A800",
+    birthMonth: "August",
+    meaning: "Adoration, loyalty, and longevity. They symbolize warmth and the pursuit of light.",
+    careTip: "Sunflowers are heavy drinkers — check water daily and use a sturdy, weighted vase.",
+    funFact: "Young sunflowers exhibit heliotropism, tracking the sun across the sky. Mature ones face east permanently.",
+    pairsWith: ["daisy", "eucalyptus", "lavender"],
+    colorTheory: "Warm golden tones pair with purple/violet for classic complementary contrast. Add white for freshness.",
+  },
+  lavender: {
+    type: "lavender",
+    label: "Lavender",
+    emoji: "💜",
+    defaultColor: "#9B7FBF",
+    defaultAccent: "#7B5FA0",
+    birthMonth: "July",
+    meaning: "Serenity, silence, and devotion. Associated with calmness and healing.",
+    careTip: "Lavender dries beautifully — hang upside down for 2 weeks for a lasting arrangement.",
+    funFact: "Romans used lavender to scent their baths. The name comes from the Latin 'lavare' meaning 'to wash'.",
+    pairsWith: ["rose", "eucalyptus", "daisy"],
+    colorTheory: "Purple lavender creates elegant triadic palettes with yellow and green. Softens bold arrangements.",
+  },
+  eucalyptus: {
+    type: "eucalyptus",
+    label: "Eucalyptus",
+    emoji: "🌿",
+    defaultColor: "#7BAF7B",
+    defaultAccent: "#5A8A5A",
+    birthMonth: "Year-round",
+    meaning: "Protection, abundance, and renewal. A symbol of the Australian landscape.",
+    careTip: "Eucalyptus lasts up to 3 weeks! Mist leaves occasionally and keep away from direct heat.",
+    funFact: "There are over 700 species of eucalyptus, and koalas eat only about 50 of them.",
+    pairsWith: ["rose", "peony", "ranunculus"],
+    colorTheory: "Silver-green eucalyptus is the ultimate neutral — it bridges warm and cool palettes effortlessly.",
+  },
+  daisy: {
+    type: "daisy",
+    label: "Daisy",
+    emoji: "🌼",
+    defaultColor: "#FFFFFF",
+    defaultAccent: "#F4D03F",
+    birthMonth: "April",
+    meaning: "Innocence, purity, and new beginnings. Perfect for cheerful, lighthearted messages.",
+    careTip: "Remove any leaves below the waterline to prevent bacteria and extend vase life.",
+    funFact: "A daisy is actually two flowers in one — the white petals and yellow center are separate florets.",
+    pairsWith: ["sunflower", "lavender", "tulip"],
+    colorTheory: "White daisies brighten any palette. Use as visual rest between saturated blooms.",
+  },
+  hyacinth: {
+    type: "hyacinth",
+    label: "Hyacinth",
+    emoji: "💐",
+    defaultColor: "#7B68AE",
+    defaultAccent: "#5B4890",
+    birthMonth: "February",
+    meaning: "Playfulness, sport, and constancy. Named after the Greek youth Hyacinthus.",
+    careTip: "Hyacinth sap can irritate skin — handle with care and rinse stems before arranging.",
+    funFact: "Hyacinths were so prized in the Ottoman Empire that festivals were held in their honor each spring.",
+    pairsWith: ["tulip", "ranunculus", "daisy"],
+    colorTheory: "Deep purple hyacinths add drama. Pair with pale pink or white for elegant contrast.",
+  },
+  ranunculus: {
+    type: "ranunculus",
+    label: "Ranunculus",
+    emoji: "🏵️",
+    defaultColor: "#F0A0A0",
+    defaultAccent: "#D07070",
+    birthMonth: "May",
+    meaning: "Charm, attraction, and radiance. Known as the 'rose of spring' for its layered petals.",
+    careTip: "Keep ranunculus in cool water and out of direct sun — they prefer cool temperatures.",
+    funFact: "Each ranunculus flower has up to 60 delicate paper-thin petals, creating its signature ruffled look.",
+    pairsWith: ["peony", "rose", "eucalyptus"],
+    colorTheory: "Ranunculus come in every warm tone. Layer different shades for an ombré effect.",
+  },
+  cherry_blossom: {
+    type: "cherry_blossom",
+    label: "Cherry Blossom",
+    emoji: "🌸",
+    defaultColor: "#FFB7C5",
+    defaultAccent: "#E8899A",
+    birthMonth: "March",
+    meaning: "The fleeting beauty of life, renewal, and hope. Central to Japanese hanami tradition.",
+    careTip: "Display branches in tall vases. Mist daily and keep in a cool room for longer bloom.",
+    funFact: "Japan gifts cherry blossom trees to countries as symbols of friendship — 3,000 were given to Washington D.C. in 1912.",
+    pairsWith: ["peony", "eucalyptus", "ranunculus"],
+    colorTheory: "Soft pinks create dreamy monochromatic schemes. Add white branches for Japanese-inspired minimalism.",
+  },
+};
+
+// Color theory tips for the pro studio
+export const colorTheoryTips = [
+  { title: "Complementary", tip: "Pair colors opposite on the wheel (e.g. purple + yellow) for vibrant, eye-catching bouquets.", icon: "🎨" },
+  { title: "Analogous", tip: "Use 2-3 neighboring colors (e.g. pink, rose, coral) for a harmonious, gentle feel.", icon: "🌈" },
+  { title: "Monochromatic", tip: "Vary shades of one color (light pink to deep rose) for an elegant, sophisticated look.", icon: "💎" },
+  { title: "Triadic", tip: "Three evenly spaced colors (e.g. yellow, purple, green) for a balanced, lively arrangement.", icon: "🔺" },
+  { title: "White space", tip: "Include white or cream flowers as 'visual breathing room' between bold colors.", icon: "✨" },
+  { title: "Odd numbers", tip: "Use odd numbers of focal flowers (3, 5, 7) — it creates natural asymmetry that feels organic.", icon: "🌿" },
+  { title: "Depth layering", tip: "Place dark flowers toward the center and lighter ones at the edges for natural depth.", icon: "🎭" },
+  { title: "Texture contrast", tip: "Mix ruffled blooms (peony, ranunculus) with linear ones (lavender, hyacinth) for visual interest.", icon: "🧵" },
+];
+
+// Bouquet design tips
+export const bouquetDesignTips = [
+  "Start with your largest flower in the center, then build outward in a spiral.",
+  "Green foliage should make up about 30% of your bouquet for a natural look.",
+  "Vary stem heights — the tallest flowers should be 1.5x the vase height.",
+  "Rotate the vase as you arrange to ensure it looks great from every angle.",
+  "Odd-numbered groupings (3 roses, 5 daisies) look more natural than even ones.",
+  "Place your focal flowers first, then fill gaps with smaller blooms and greenery.",
+];

@@ -37,32 +37,40 @@ const BouquetCanvas: React.FC<Props> = ({ flowers, wrapColor, wrapAccent, artSty
   const styleVariant = artStyle === "pixel" ? "pixel" : artStyle === "botanical" ? "botanical" : "flat";
 
   return (
-    <svg viewBox="-100 -140 200 240" className="w-full h-auto max-w-xs sm:max-w-sm mx-auto" role="img" aria-label="Your bouquet">
-      {/* Stems converging */}
-      {flowers.slice(0, visibleCount).map((f, i) => (
-        <line
-          key={`stem-${i}`}
-          x1={f.x}
-          y1={f.y + 15 * f.scale}
-          x2={f.x * 0.15}
-          y2={80}
-          stroke="#5A8A5A"
-          strokeWidth={styleVariant === "pixel" ? 2 : 1.5}
-          strokeLinecap="round"
-          opacity={0.4}
-        />
-      ))}
+    <svg viewBox="-120 -160 240 300" className="w-full h-auto max-w-xs sm:max-w-sm mx-auto" role="img" aria-label="Your bouquet">
+      {/* Stems converging to wrap — each flower gets its own curved stem */}
+      {flowers.slice(0, visibleCount).map((f, i) => {
+        const stemBottom = 75;
+        const convergeX = f.x * 0.1;
+        const midY = (f.y + stemBottom) / 2;
+        return (
+          <path
+            key={`stem-${i}`}
+            d={`M ${f.x} ${f.y + 12 * f.scale} Q ${f.x * 0.6} ${midY}, ${convergeX} ${stemBottom}`}
+            stroke="#5A8A5A"
+            strokeWidth={styleVariant === "pixel" ? 2 : 1.2 + f.scale * 0.3}
+            strokeLinecap="round"
+            fill="none"
+            opacity={0.5}
+          />
+        );
+      })}
 
-      {/* Wrapping paper */}
+      {/* Wrapping paper — more detailed */}
       <path
-        d={`M -28 60 Q -35 80, -20 95 L 20 95 Q 35 80, 28 60 Z`}
+        d={`M -32 55 Q -40 75, -22 100 L 22 100 Q 40 75, 32 55 Z`}
         fill={wrapColor}
         stroke={wrapAccent}
-        strokeWidth={1}
-        opacity={0.9}
+        strokeWidth={1.2}
+        opacity={0.92}
       />
-      {/* Ribbon */}
-      <ellipse cx="0" cy="58" rx="12" ry="4" fill={wrapAccent} opacity={0.7} />
+      {/* Paper fold lines */}
+      <path d="M -15 60 Q -18 78, -12 95" stroke={wrapAccent} strokeWidth={0.5} fill="none" opacity={0.4} />
+      <path d="M 15 60 Q 18 78, 12 95" stroke={wrapAccent} strokeWidth={0.5} fill="none" opacity={0.4} />
+      {/* Ribbon bow */}
+      <ellipse cx="0" cy="54" rx="14" ry="5" fill={wrapAccent} opacity={0.75} />
+      <path d="M -6 54 Q -12 48, -4 46 Q 0 50, -6 54" fill={wrapAccent} opacity={0.6} />
+      <path d="M 6 54 Q 12 48, 4 46 Q 0 50, 6 54" fill={wrapAccent} opacity={0.6} />
 
       {/* Flowers */}
       {flowers.slice(0, visibleCount).map((f, i) => {
