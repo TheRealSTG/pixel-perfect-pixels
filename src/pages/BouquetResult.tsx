@@ -1,11 +1,12 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { composeBouquet } from "@/lib/bouquet-engine";
+import { composeBouquet, type WrapStyle } from "@/lib/bouquet-engine";
 import BouquetCanvas from "@/components/flowers/BouquetCanvas";
 import type { BouquetConfig } from "@/lib/bouquet-data";
 
 interface LocationState {
   config: BouquetConfig;
   customFlowers?: Parameters<typeof BouquetCanvas>[0]["flowers"];
+  wrapStyle?: WrapStyle;
 }
 
 const BouquetResult = () => {
