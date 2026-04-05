@@ -65,6 +65,7 @@ const BouquetResult = () => {
             wrapAccent={composition.wrapAccent}
             artStyle={config.artStyle}
             animated={true}
+            wrapStyle={composition.wrapStyle}
           />
         </div>
 
