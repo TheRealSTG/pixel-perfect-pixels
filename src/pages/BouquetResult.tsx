@@ -1,11 +1,12 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { composeBouquet } from "@/lib/bouquet-engine";
+import { composeBouquet, type WrapStyle } from "@/lib/bouquet-engine";
 import BouquetCanvas from "@/components/flowers/BouquetCanvas";
 import type { BouquetConfig } from "@/lib/bouquet-data";
 
 interface LocationState {
   config: BouquetConfig;
   customFlowers?: Parameters<typeof BouquetCanvas>[0]["flowers"];
+  wrapStyle?: WrapStyle;
 }
 
 const BouquetResult = () => {
@@ -14,7 +15,7 @@ const BouquetResult = () => {
   const state = location.state as LocationState | undefined;
   const config = state?.config;
   const customFlowers = state?.customFlowers;
-
+  const customWrapStyle = state?.wrapStyle;
   if (!config) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -30,7 +31,7 @@ const BouquetResult = () => {
   }
 
   const composition = customFlowers
-    ? { flowers: customFlowers, wrapColor: "#E8DDD0", wrapAccent: "#D4C8B8", backgroundColor: "#F8F5F0" }
+    ? { flowers: customFlowers, wrapColor: "#E8DDD0", wrapAccent: "#D4C8B8", backgroundColor: "#F8F5F0", wrapStyle: (customWrapStyle || "paper") as WrapStyle }
     : composeBouquet(config.occasion, config.mood, config.artStyle, config.recipient.name, config.recipient.favouriteColour);
 
   return (
@@ -64,6 +65,7 @@ const BouquetResult = () => {
             wrapAccent={composition.wrapAccent}
             artStyle={config.artStyle}
             animated={true}
+            wrapStyle={composition.wrapStyle}
           />
         </div>
 

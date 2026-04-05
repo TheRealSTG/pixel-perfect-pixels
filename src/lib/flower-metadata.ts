@@ -145,6 +145,32 @@ export const flowerMetadata: Record<FlowerType, FlowerInfo> = {
     pairsWith: ["peony", "eucalyptus", "ranunculus"],
     colorTheory: "Soft pinks create dreamy monochromatic schemes. Add white branches for Japanese-inspired minimalism.",
   },
+  babys_breath: {
+    type: "babys_breath",
+    label: "Baby's Breath",
+    emoji: "🤍",
+    defaultColor: "#FFFFFF",
+    defaultAccent: "#E8E0D8",
+    birthMonth: "Year-round",
+    meaning: "Everlasting love, innocence, and purity. A classic filler that adds cloud-like softness.",
+    careTip: "Baby's breath dries perfectly — hang upside down for 1-2 weeks for an everlasting arrangement.",
+    funFact: "Despite its delicate appearance, baby's breath is incredibly hardy and can survive in poor soil conditions.",
+    pairsWith: ["rose", "peony", "ranunculus"],
+    colorTheory: "Pure white baby's breath is the ultimate neutral filler — it brightens and softens any palette.",
+  },
+  fern: {
+    type: "fern",
+    label: "Fern",
+    emoji: "🌿",
+    defaultColor: "#5A8A5A",
+    defaultAccent: "#3A6A3A",
+    birthMonth: "Year-round",
+    meaning: "Sincerity, shelter, and new life. Ferns represent humility and fascination in floriography.",
+    careTip: "Mist fern fronds daily — they love humidity. Submerge in water for 30 mins to revive wilted leaves.",
+    funFact: "Ferns are one of the oldest plant families on Earth, dating back over 360 million years — older than dinosaurs!",
+    pairsWith: ["rose", "peony", "cherry_blossom"],
+    colorTheory: "Deep green ferns provide essential structure and contrast. They ground warm-toned arrangements beautifully.",
+  },
 };
 
 // Color theory tips for the pro studio
