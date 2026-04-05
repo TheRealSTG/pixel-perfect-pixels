@@ -15,7 +15,7 @@ const BouquetResult = () => {
   const state = location.state as LocationState | undefined;
   const config = state?.config;
   const customFlowers = state?.customFlowers;
-
+  const customWrapStyle = state?.wrapStyle;
   if (!config) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
