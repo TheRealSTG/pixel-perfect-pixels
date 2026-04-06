@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { flowerComponents, type FlowerType } from "@/components/flowers/FlowerSVGs";
 import { flowerMetadata, colorTheoryTips, bouquetDesignTips } from "@/lib/flower-metadata";
@@ -35,6 +35,7 @@ const FloristStudio = () => {
   const [showTips, setShowTips] = useState(true);
   const [selectedFlower, setSelectedFlower] = useState<string | null>(null);
   const [wrapStyle, setWrapStyle] = useState<WrapStyle>("paper");
+  const didDrag = useRef(false);
 
   const addFlower = useCallback((type: FlowerType, color: string, accent: string) => {
     const id = `flower-${++idCounter}`;
@@ -66,12 +67,13 @@ const FloristStudio = () => {
     const flower = flowers.find((f) => f.id === id)!;
     setDragOffset({ x: svgPt.x - flower.x, y: svgPt.y - flower.y });
     setDragging(id);
-    setSelectedFlower(id);
+    didDrag.current = false;
     (e.target as Element).setPointerCapture(e.pointerId);
   };
 
   const handlePointerMove = (e: React.PointerEvent<SVGSVGElement>) => {
     if (!dragging) return;
+    didDrag.current = true;
     const svg = e.currentTarget as SVGSVGElement;
     const pt = svg.createSVGPoint();
     pt.x = e.clientX; pt.y = e.clientY;
@@ -83,7 +85,17 @@ const FloristStudio = () => {
     );
   };
 
-  const handlePointerUp = () => setDragging(null);
+  const handlePointerUp = () => {
+    if (dragging && !didDrag.current) {
+      // It was a tap, not a drag — select/toggle
+      setSelectedFlower((prev) => prev === dragging ? null : dragging);
+    } else if (dragging) {
+      // Was dragging — keep current selection on the dragged flower
+      setSelectedFlower(dragging);
+    }
+    setDragging(null);
+  };
+
   const removeFlower = (id: string) => {
     setFlowers((prev) => prev.filter((f) => f.id !== id));
     if (selectedFlower === id) setSelectedFlower(null);
@@ -101,6 +113,115 @@ const FloristStudio = () => {
     const lb = layerOrder[b.layer] ?? 1;
     return la !== lb ? la - lb : a.y - b.y;
   });
+
+  const renderStudioWrap = () => {
+    switch (wrapStyle) {
+      case "kraft":
+        return (
+          <>
+            <path d="M -38 48 Q -48 75, -26 108 L 26 108 Q 48 75, 38 48 Z"
+              fill={wrap.color} stroke={wrap.accent} strokeWidth={1.8} opacity={0.95} />
+            {/* Kraft texture - horizontal creases */}
+            <path d="M -30 60 Q 0 58, 30 60" stroke={wrap.accent} strokeWidth={0.5} fill="none" opacity={0.2} />
+            <path d="M -28 72 Q 0 70, 28 72" stroke={wrap.accent} strokeWidth={0.4} fill="none" opacity={0.15} />
+            <path d="M -24 84 Q 0 82, 24 84" stroke={wrap.accent} strokeWidth={0.4} fill="none" opacity={0.15} />
+            <path d="M -20 96 Q 0 94, 20 96" stroke={wrap.accent} strokeWidth={0.3} fill="none" opacity={0.1} />
+            {/* Twine bow */}
+            <path d="M -12 48 Q -20 38, -8 34 Q 0 42, -12 48" stroke="#8B7355" strokeWidth={1} fill="none" opacity={0.6} />
+            <path d="M 12 48 Q 20 38, 8 34 Q 0 42, 12 48" stroke="#8B7355" strokeWidth={1} fill="none" opacity={0.6} />
+            <circle cx="0" cy="47" r="2.5" fill="#8B7355" opacity={0.7} />
+            {/* Twine tails */}
+            <path d="M 0 49 Q -4 58, -6 65" stroke="#8B7355" strokeWidth={0.8} fill="none" opacity={0.4} />
+            <path d="M 0 49 Q 3 56, 5 62" stroke="#8B7355" strokeWidth={0.8} fill="none" opacity={0.4} />
+          </>
+        );
+      case "tissue":
+        return (
+          <>
+            {/* Ruffled edges sticking up */}
+            <path d="M -40 46 Q -44 32, -32 28 Q -38 38, -30 46 Q -36 38, -40 46" fill={wrap.color} opacity={0.45} />
+            <path d="M -28 44 Q -30 30, -22 26 Q -26 36, -20 44 Q -24 36, -28 44" fill={wrap.color} opacity={0.4} />
+            <path d="M 40 46 Q 44 32, 32 28 Q 38 38, 30 46 Q 36 38, 40 46" fill={wrap.color} opacity={0.45} />
+            <path d="M 28 44 Q 30 30, 22 26 Q 26 36, 20 44 Q 24 36, 28 44" fill={wrap.color} opacity={0.4} />
+            {/* Main body */}
+            <path d="M -36 48 Q -44 74, -24 108 L 24 108 Q 44 74, 36 48 Z"
+              fill={wrap.color} stroke={wrap.accent} strokeWidth={0.6} opacity={0.8} />
+            {/* Subtle vertical crinkle lines */}
+            <path d="M -18 52 Q -20 74, -14 100" stroke={wrap.accent} strokeWidth={0.25} fill="none" opacity={0.2} />
+            <path d="M 18 52 Q 20 74, 14 100" stroke={wrap.accent} strokeWidth={0.25} fill="none" opacity={0.2} />
+            <path d="M 0 50 Q -1 72, 0 100" stroke={wrap.accent} strokeWidth={0.2} fill="none" opacity={0.15} />
+            {/* Satin ribbon with bow */}
+            <rect x="-20" y="46" width="40" height="5" rx="2.5" fill={wrap.accent} opacity={0.6} />
+            <path d="M -10 48 Q -18 38, -7 34 Q 0 42, -10 48" fill={wrap.accent} opacity={0.5} />
+            <path d="M 10 48 Q 18 38, 7 34 Q 0 42, 10 48" fill={wrap.accent} opacity={0.5} />
+            <ellipse cx="0" cy="48" rx="3" ry="2.5" fill={wrap.accent} opacity={0.7} />
+          </>
+        );
+      case "burlap":
+        return (
+          <>
+            <path d="M -34 50 Q -42 74, -22 105 L 22 105 Q 42 74, 34 50 Z"
+              fill={wrap.color} stroke={wrap.accent} strokeWidth={2} opacity={0.92} />
+            {/* Woven texture - horizontal */}
+            {Array.from({ length: 9 }).map((_, i) => (
+              <line key={`h-${i}`} x1="-30" y1={54 + i * 6} x2="30" y2={54 + i * 6}
+                stroke={wrap.accent} strokeWidth={0.4} opacity={0.2} />
+            ))}
+            {/* Woven texture - vertical */}
+            {Array.from({ length: 7 }).map((_, i) => (
+              <line key={`v-${i}`} x1={-22 + i * 7} y1="52" x2={-20 + i * 7} y2="103"
+                stroke={wrap.accent} strokeWidth={0.35} opacity={0.15} />
+            ))}
+            {/* Cross-hatch for burlap feel */}
+            {Array.from({ length: 5 }).map((_, i) => (
+              <line key={`d-${i}`} x1={-18 + i * 9} y1="54" x2={-14 + i * 9} y2="100"
+                stroke={wrap.accent} strokeWidth={0.2} opacity={0.1} />
+            ))}
+            {/* Rough twine tie */}
+            <path d="M -14 50 Q -14 46, 0 45 Q 14 46, 14 50" stroke="#7A6A50" strokeWidth={1.5} fill="none" opacity={0.5} />
+            <circle cx="0" cy="49" r="2" fill="#7A6A50" opacity={0.5} />
+          </>
+        );
+      case "vase":
+        return (
+          <>
+            {/* Glass vase body */}
+            <path d="M -20 42 Q -24 58, -22 90 Q -20 100, 0 103 Q 20 100, 22 90 Q 24 58, 20 42 Z"
+              fill={wrap.color} stroke={wrap.accent} strokeWidth={1} opacity={0.5} />
+            {/* Water */}
+            <path d="M -21 65 Q 0 62, 21 65 L 22 90 Q 20 100, 0 103 Q -20 100, -22 90 Z"
+              fill="#B8D8E8" opacity={0.2} />
+            {/* Glass highlights */}
+            <path d="M -16 48 Q -17 62, -16 85" stroke="#FFFFFF" strokeWidth={2} opacity={0.25} fill="none" strokeLinecap="round" />
+            <path d="M -12 52 Q -13 65, -12 80" stroke="#FFFFFF" strokeWidth={0.8} opacity={0.15} fill="none" strokeLinecap="round" />
+            {/* Rim */}
+            <ellipse cx="0" cy="42" rx="20" ry="5" fill={wrap.color} stroke={wrap.accent} strokeWidth={0.8} opacity={0.6} />
+            {/* Base */}
+            <ellipse cx="0" cy="103" rx="10" ry="3" fill={wrap.accent} opacity={0.3} />
+          </>
+        );
+      default: // paper
+        return (
+          <>
+            {/* Paper cone */}
+            <path d="M -34 52 Q -42 76, -24 104 L 24 104 Q 42 76, 34 52 Z"
+              fill={wrap.color} stroke={wrap.accent} strokeWidth={1.2} opacity={0.92} />
+            {/* Paper fold lines */}
+            <path d="M -16 58 Q -20 76, -14 98" stroke={wrap.accent} strokeWidth={0.5} fill="none" opacity={0.3} />
+            <path d="M 16 58 Q 20 76, 14 98" stroke={wrap.accent} strokeWidth={0.5} fill="none" opacity={0.3} />
+            <path d="M 0 54 Q -1 74, 0 98" stroke={wrap.accent} strokeWidth={0.3} fill="none" opacity={0.2} />
+            {/* Top fold / cuff */}
+            <path d="M -36 52 Q -34 46, -20 44 Q 0 42, 20 44 Q 34 46, 36 52"
+              stroke={wrap.accent} strokeWidth={0.8} fill={wrap.color} opacity={0.85} />
+            {/* Ribbon bow */}
+            <ellipse cx="0" cy="52" rx="14" ry="4.5" fill={wrap.accent} opacity={0.6} />
+            <path d="M -7 52 Q -14 44, -5 42 Q 0 48, -7 52" fill={wrap.accent} opacity={0.5} />
+            <path d="M 7 52 Q 14 44, 5 42 Q 0 48, 7 52" fill={wrap.accent} opacity={0.5} />
+            <circle cx="0" cy="52" r="2" fill={wrap.accent} opacity={0.7} />
+          </>
+        );
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -187,7 +308,7 @@ const FloristStudio = () => {
             ))}
           </div>
 
-          {/* Hover tooltip */}
+          {/* Hover tooltip - consistent text styling */}
           {hoveredInfo && (
             <div className="hidden lg:block p-3 rounded-xl bg-card border border-border animate-fade-up">
               <div className="flex items-center gap-2 mb-2">
@@ -198,9 +319,9 @@ const FloristStudio = () => {
                 </div>
               </div>
               <p className="text-xs font-sans text-muted-foreground mb-1.5">{hoveredInfo.meaning}</p>
-              <p className="text-xs font-sans text-muted-foreground/80 italic">💡 {hoveredInfo.careTip}</p>
-              <p className="text-[10px] font-sans text-muted-foreground/70 mt-1">🎨 {hoveredInfo.colorTheory}</p>
-              <p className="text-[10px] font-sans text-muted-foreground/60 mt-1">✨ {hoveredInfo.funFact}</p>
+              <p className="text-xs font-sans text-muted-foreground italic mb-1.5">💡 {hoveredInfo.careTip}</p>
+              <p className="text-xs font-sans text-muted-foreground mb-1.5">🎨 {hoveredInfo.colorTheory}</p>
+              <p className="text-xs font-sans text-muted-foreground">✨ {hoveredInfo.funFact}</p>
             </div>
           )}
         </div>
@@ -217,62 +338,15 @@ const FloristStudio = () => {
                 onPointerMove={handlePointerMove}
                 onPointerUp={handlePointerUp}
                 style={{ touchAction: "none" }}
-                onClick={() => setSelectedFlower(null)}
+                onClick={(e) => {
+                  // Only deselect if clicking the SVG background itself
+                  if (e.target === e.currentTarget) setSelectedFlower(null);
+                }}
               >
-                {/* Stems */}
-                {sortedFlowers.map((f) => {
-                  const stemBottom = f.layer === "back" ? 65 : f.layer === "front" ? 80 : 72;
-                  const convergeX = f.x * 0.08;
-                  const midY = (f.y + stemBottom) / 2;
-                  return (
-                    <path key={`stem-${f.id}`}
-                      d={`M ${f.x} ${f.y + 12 * f.scale} Q ${f.x * 0.5} ${midY}, ${convergeX} ${stemBottom}`}
-                      stroke={f.type === "cherry_blossom" ? "#8B6040" : "#5A8A5A"}
-                      strokeWidth={f.layer === "front" ? 1.5 + f.scale * 0.3 : 0.8 + f.scale * 0.2}
-                      strokeLinecap="round" fill="none"
-                      opacity={f.layer === "back" ? 0.35 : 0.45} />
-                  );
-                })}
+                {/* Wrap (rendered behind flowers) */}
+                {renderStudioWrap()}
 
-                {/* Wrap */}
-                {wrapStyle === "vase" ? (
-                  <>
-                    <path d="M -18 45 Q -22 65, -20 95 Q -18 102, 0 104 Q 18 102, 20 95 Q 22 65, 18 45 Z"
-                      fill={wrap.color} stroke={wrap.accent} strokeWidth={1} opacity={0.6} />
-                    <path d="M -19 70 Q 0 68, 19 70 L 20 95 Q 18 102, 0 104 Q -18 102, -20 95 Z"
-                      fill="#C8E0E8" opacity={0.25} />
-                    <path d="M -14 50 Q -15 65, -14 90" stroke="#FFFFFF" strokeWidth={1.5} opacity={0.3} fill="none" strokeLinecap="round" />
-                    <ellipse cx="0" cy="45" rx="18" ry="4" fill={wrap.color} stroke={wrap.accent} strokeWidth={0.8} opacity={0.7} />
-                  </>
-                ) : wrapStyle === "kraft" ? (
-                  <>
-                    <path d="M -35 50 Q -44 72, -24 105 L 24 105 Q 44 72, 35 50 Z"
-                      fill={wrap.color} stroke={wrap.accent} strokeWidth={1.5} opacity={0.95} />
-                    <circle cx="0" cy="49" r="2" fill={wrap.accent} opacity={0.6} />
-                  </>
-                ) : wrapStyle === "burlap" ? (
-                  <>
-                    <path d="M -33 52 Q -40 72, -20 102 L 20 102 Q 40 72, 33 52 Z"
-                      fill={wrap.color} stroke={wrap.accent} strokeWidth={1.8} opacity={0.9} />
-                    <ellipse cx="0" cy="52" rx="12" ry="3" fill="none" stroke={wrap.accent} strokeWidth={1} opacity={0.6} />
-                  </>
-                ) : wrapStyle === "tissue" ? (
-                  <>
-                    <path d="M -38 48 Q -42 36, -30 32 Q -35 44, -28 50" fill={wrap.color} opacity={0.5} />
-                    <path d="M 38 48 Q 42 36, 30 32 Q 35 44, 28 50" fill={wrap.color} opacity={0.5} />
-                    <path d="M -34 50 Q -42 72, -22 105 L 22 105 Q 42 72, 34 50 Z"
-                      fill={wrap.color} stroke={wrap.accent} strokeWidth={0.8} opacity={0.85} />
-                    <rect x="-16" y="48" width="32" height="4" rx="2" fill={wrap.accent} opacity={0.7} />
-                  </>
-                ) : (
-                  <>
-                    <path d="M -32 55 Q -40 75, -22 100 L 22 100 Q 40 75, 32 55 Z"
-                      fill={wrap.color} stroke={wrap.accent} strokeWidth={1.2} opacity={0.92} />
-                    <ellipse cx="0" cy="54" rx="14" ry="5" fill={wrap.accent} opacity={0.75} />
-                  </>
-                )}
-
-                {/* Flowers by layer */}
+                {/* Flowers by layer — NO stems binding to center */}
                 {sortedFlowers.map((f) => {
                   const FlowerComp = flowerComponents[f.type];
                   const isSelected = f.id === selectedFlower;
@@ -283,8 +357,10 @@ const FloristStudio = () => {
                       style={{ cursor: dragging === f.id ? "grabbing" : "grab" }}>
                       <FlowerComp x={f.x} y={f.y} scale={f.scale} rotation={f.rotation}
                         color={f.color} accentColor={f.accentColor} style={styleVariant} />
-                      <circle cx={f.x} cy={f.y} r={15 * f.scale} fill="transparent"
-                        stroke={isSelected ? "#3B82F6" : "none"} strokeWidth={1} strokeDasharray="3 2" opacity={0.6} />
+                      {isSelected && (
+                        <circle cx={f.x} cy={f.y} r={15 * f.scale} fill="transparent"
+                          stroke="hsl(var(--primary))" strokeWidth={1} strokeDasharray="3 2" opacity={0.6} />
+                      )}
                     </g>
                   );
                 })}
@@ -292,7 +368,7 @@ const FloristStudio = () => {
             )}
           </div>
 
-          {/* Controls for selected flower */}
+          {/* Controls for selected flower — persists until deselected */}
           {selected && (
             <div className="mt-3 p-3 rounded-xl bg-card border border-border animate-fade-up">
               <div className="flex items-center justify-between mb-2">

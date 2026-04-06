@@ -45,7 +45,7 @@ const BouquetCanvas: React.FC<Props> = ({ flowers, wrapColor, wrapAccent, artSty
     const la = layerOrder[a.layer || "mid"] ?? 1;
     const lb = layerOrder[b.layer || "mid"] ?? 1;
     if (la !== lb) return la - lb;
-    return a.y - b.y; // within same layer, back-to-front by y
+    return a.y - b.y;
   });
 
   const renderWrap = () => {
@@ -53,76 +53,80 @@ const BouquetCanvas: React.FC<Props> = ({ flowers, wrapColor, wrapAccent, artSty
       case "kraft":
         return (
           <>
-            <path d="M -35 50 Q -44 72, -24 105 L 24 105 Q 44 72, 35 50 Z"
-              fill={wrapColor} stroke={wrapAccent} strokeWidth={1.5} opacity={0.95} />
-            <path d="M -18 55 Q -22 75, -14 98" stroke={wrapAccent} strokeWidth={0.7} fill="none" opacity={0.3} />
-            <path d="M 18 55 Q 22 75, 14 98" stroke={wrapAccent} strokeWidth={0.7} fill="none" opacity={0.3} />
-            <path d="M 0 55 Q 0 75, 0 98" stroke={wrapAccent} strokeWidth={0.4} fill="none" opacity={0.2} />
-            {/* Twine bow */}
-            <path d="M -10 50 Q -16 42, -6 40 Q 0 46, -10 50" stroke={wrapAccent} strokeWidth={0.8} fill="none" opacity={0.5} />
-            <path d="M 10 50 Q 16 42, 6 40 Q 0 46, 10 50" stroke={wrapAccent} strokeWidth={0.8} fill="none" opacity={0.5} />
-            <circle cx="0" cy="49" r="2" fill={wrapAccent} opacity={0.6} />
+            <path d="M -38 48 Q -48 75, -26 108 L 26 108 Q 48 75, 38 48 Z"
+              fill={wrapColor} stroke={wrapAccent} strokeWidth={1.8} opacity={0.95} />
+            <path d="M -30 60 Q 0 58, 30 60" stroke={wrapAccent} strokeWidth={0.5} fill="none" opacity={0.2} />
+            <path d="M -28 72 Q 0 70, 28 72" stroke={wrapAccent} strokeWidth={0.4} fill="none" opacity={0.15} />
+            <path d="M -24 84 Q 0 82, 24 84" stroke={wrapAccent} strokeWidth={0.4} fill="none" opacity={0.15} />
+            <path d="M -20 96 Q 0 94, 20 96" stroke={wrapAccent} strokeWidth={0.3} fill="none" opacity={0.1} />
+            <path d="M -12 48 Q -20 38, -8 34 Q 0 42, -12 48" stroke="#8B7355" strokeWidth={1} fill="none" opacity={0.6} />
+            <path d="M 12 48 Q 20 38, 8 34 Q 0 42, 12 48" stroke="#8B7355" strokeWidth={1} fill="none" opacity={0.6} />
+            <circle cx="0" cy="47" r="2.5" fill="#8B7355" opacity={0.7} />
+            <path d="M 0 49 Q -4 58, -6 65" stroke="#8B7355" strokeWidth={0.8} fill="none" opacity={0.4} />
+            <path d="M 0 49 Q 3 56, 5 62" stroke="#8B7355" strokeWidth={0.8} fill="none" opacity={0.4} />
           </>
         );
       case "tissue":
         return (
           <>
-            {/* Ruffled tissue paper edges */}
-            <path d="M -38 48 Q -42 36, -30 32 Q -35 44, -28 50 Q -34 42, -38 48" fill={wrapColor} opacity={0.5} />
-            <path d="M 38 48 Q 42 36, 30 32 Q 35 44, 28 50 Q 34 42, 38 48" fill={wrapColor} opacity={0.5} />
-            <path d="M -34 50 Q -42 72, -22 105 L 22 105 Q 42 72, 34 50 Z"
-              fill={wrapColor} stroke={wrapAccent} strokeWidth={0.8} opacity={0.85} />
-            <path d="M -20 55 Q -24 75, -16 98" stroke={wrapAccent} strokeWidth={0.3} fill="none" opacity={0.25} />
-            <path d="M 20 55 Q 24 75, 16 98" stroke={wrapAccent} strokeWidth={0.3} fill="none" opacity={0.25} />
-            {/* Satin ribbon */}
-            <rect x="-16" y="48" width="32" height="4" rx="2" fill={wrapAccent} opacity={0.7} />
-            <path d="M -8 50 Q -14 42, -5 40 Q 0 46, -8 50" fill={wrapAccent} opacity={0.5} />
-            <path d="M 8 50 Q 14 42, 5 40 Q 0 46, 8 50" fill={wrapAccent} opacity={0.5} />
+            <path d="M -40 46 Q -44 32, -32 28 Q -38 38, -30 46 Q -36 38, -40 46" fill={wrapColor} opacity={0.45} />
+            <path d="M -28 44 Q -30 30, -22 26 Q -26 36, -20 44 Q -24 36, -28 44" fill={wrapColor} opacity={0.4} />
+            <path d="M 40 46 Q 44 32, 32 28 Q 38 38, 30 46 Q 36 38, 40 46" fill={wrapColor} opacity={0.45} />
+            <path d="M 28 44 Q 30 30, 22 26 Q 26 36, 20 44 Q 24 36, 28 44" fill={wrapColor} opacity={0.4} />
+            <path d="M -36 48 Q -44 74, -24 108 L 24 108 Q 44 74, 36 48 Z"
+              fill={wrapColor} stroke={wrapAccent} strokeWidth={0.6} opacity={0.8} />
+            <path d="M -18 52 Q -20 74, -14 100" stroke={wrapAccent} strokeWidth={0.25} fill="none" opacity={0.2} />
+            <path d="M 18 52 Q 20 74, 14 100" stroke={wrapAccent} strokeWidth={0.25} fill="none" opacity={0.2} />
+            <rect x="-20" y="46" width="40" height="5" rx="2.5" fill={wrapAccent} opacity={0.6} />
+            <path d="M -10 48 Q -18 38, -7 34 Q 0 42, -10 48" fill={wrapAccent} opacity={0.5} />
+            <path d="M 10 48 Q 18 38, 7 34 Q 0 42, 10 48" fill={wrapAccent} opacity={0.5} />
+            <ellipse cx="0" cy="48" rx="3" ry="2.5" fill={wrapAccent} opacity={0.7} />
           </>
         );
       case "burlap":
         return (
           <>
-            <path d="M -33 52 Q -40 72, -20 102 L 20 102 Q 40 72, 33 52 Z"
-              fill={wrapColor} stroke={wrapAccent} strokeWidth={1.8} opacity={0.9} />
-            {/* Burlap texture lines */}
-            {Array.from({ length: 8 }).map((_, i) => (
-              <line key={`h-${i}`} x1="-28" y1={56 + i * 6} x2="28" y2={56 + i * 6}
-                stroke={wrapAccent} strokeWidth={0.3} opacity={0.2} />
+            <path d="M -34 50 Q -42 74, -22 105 L 22 105 Q 42 74, 34 50 Z"
+              fill={wrapColor} stroke={wrapAccent} strokeWidth={2} opacity={0.92} />
+            {Array.from({ length: 9 }).map((_, i) => (
+              <line key={`h-${i}`} x1="-30" y1={54 + i * 6} x2="30" y2={54 + i * 6}
+                stroke={wrapAccent} strokeWidth={0.4} opacity={0.2} />
             ))}
-            {Array.from({ length: 6 }).map((_, i) => (
-              <line key={`v-${i}`} x1={-20 + i * 8} y1="54" x2={-18 + i * 8} y2="100"
-                stroke={wrapAccent} strokeWidth={0.3} opacity={0.15} />
+            {Array.from({ length: 7 }).map((_, i) => (
+              <line key={`v-${i}`} x1={-22 + i * 7} y1="52" x2={-20 + i * 7} y2="103"
+                stroke={wrapAccent} strokeWidth={0.35} opacity={0.15} />
             ))}
-            {/* Rustic twine */}
-            <ellipse cx="0" cy="52" rx="12" ry="3" fill="none" stroke={wrapAccent} strokeWidth={1} opacity={0.6} />
+            <path d="M -14 50 Q -14 46, 0 45 Q 14 46, 14 50" stroke="#7A6A50" strokeWidth={1.5} fill="none" opacity={0.5} />
+            <circle cx="0" cy="49" r="2" fill="#7A6A50" opacity={0.5} />
           </>
         );
       case "vase":
         return (
           <>
-            {/* Glass vase */}
-            <path d="M -18 45 Q -22 65, -20 95 Q -18 102, 0 104 Q 18 102, 20 95 Q 22 65, 18 45 Z"
-              fill={wrapColor} stroke={wrapAccent} strokeWidth={1} opacity={0.6} />
-            {/* Water line */}
-            <path d="M -19 70 Q 0 68, 19 70 L 20 95 Q 18 102, 0 104 Q -18 102, -20 95 Z"
-              fill="#C8E0E8" opacity={0.25} />
-            {/* Glass highlight */}
-            <path d="M -14 50 Q -15 65, -14 90" stroke="#FFFFFF" strokeWidth={1.5} opacity={0.3} fill="none" strokeLinecap="round" />
-            {/* Rim */}
-            <ellipse cx="0" cy="45" rx="18" ry="4" fill={wrapColor} stroke={wrapAccent} strokeWidth={0.8} opacity={0.7} />
+            <path d="M -20 42 Q -24 58, -22 90 Q -20 100, 0 103 Q 20 100, 22 90 Q 24 58, 20 42 Z"
+              fill={wrapColor} stroke={wrapAccent} strokeWidth={1} opacity={0.5} />
+            <path d="M -21 65 Q 0 62, 21 65 L 22 90 Q 20 100, 0 103 Q -20 100, -22 90 Z"
+              fill="#B8D8E8" opacity={0.2} />
+            <path d="M -16 48 Q -17 62, -16 85" stroke="#FFFFFF" strokeWidth={2} opacity={0.25} fill="none" strokeLinecap="round" />
+            <path d="M -12 52 Q -13 65, -12 80" stroke="#FFFFFF" strokeWidth={0.8} opacity={0.15} fill="none" strokeLinecap="round" />
+            <ellipse cx="0" cy="42" rx="20" ry="5" fill={wrapColor} stroke={wrapAccent} strokeWidth={0.8} opacity={0.6} />
+            <ellipse cx="0" cy="103" rx="10" ry="3" fill={wrapAccent} opacity={0.3} />
           </>
         );
       default: // paper
         return (
           <>
-            <path d="M -32 55 Q -40 75, -22 100 L 22 100 Q 40 75, 32 55 Z"
+            <path d="M -34 52 Q -42 76, -24 104 L 24 104 Q 42 76, 34 52 Z"
               fill={wrapColor} stroke={wrapAccent} strokeWidth={1.2} opacity={0.92} />
-            <path d="M -15 60 Q -18 78, -12 95" stroke={wrapAccent} strokeWidth={0.5} fill="none" opacity={0.4} />
-            <path d="M 15 60 Q 18 78, 12 95" stroke={wrapAccent} strokeWidth={0.5} fill="none" opacity={0.4} />
-            <ellipse cx="0" cy="54" rx="14" ry="5" fill={wrapAccent} opacity={0.75} />
-            <path d="M -6 54 Q -12 48, -4 46 Q 0 50, -6 54" fill={wrapAccent} opacity={0.6} />
-            <path d="M 6 54 Q 12 48, 4 46 Q 0 50, 6 54" fill={wrapAccent} opacity={0.6} />
+            <path d="M -16 58 Q -20 76, -14 98" stroke={wrapAccent} strokeWidth={0.5} fill="none" opacity={0.3} />
+            <path d="M 16 58 Q 20 76, 14 98" stroke={wrapAccent} strokeWidth={0.5} fill="none" opacity={0.3} />
+            <path d="M 0 54 Q -1 74, 0 98" stroke={wrapAccent} strokeWidth={0.3} fill="none" opacity={0.2} />
+            <path d="M -36 52 Q -34 46, -20 44 Q 0 42, 20 44 Q 34 46, 36 52"
+              stroke={wrapAccent} strokeWidth={0.8} fill={wrapColor} opacity={0.85} />
+            <ellipse cx="0" cy="52" rx="14" ry="4.5" fill={wrapAccent} opacity={0.6} />
+            <path d="M -7 52 Q -14 44, -5 42 Q 0 48, -7 52" fill={wrapAccent} opacity={0.5} />
+            <path d="M 7 52 Q 14 44, 5 42 Q 0 48, 7 52" fill={wrapAccent} opacity={0.5} />
+            <circle cx="0" cy="52" r="2" fill={wrapAccent} opacity={0.7} />
           </>
         );
     }
@@ -131,18 +135,18 @@ const BouquetCanvas: React.FC<Props> = ({ flowers, wrapColor, wrapAccent, artSty
   // Stem length varies by layer
   const getStemBottom = (layer?: BouquetLayer) => {
     switch (layer) {
-      case "back": return 65;
-      case "front": return 80;
-      default: return 72;
+      case "back": return 62;
+      case "front": return 78;
+      default: return 70;
     }
   };
 
   return (
     <svg viewBox="-120 -160 240 300" className="w-full h-auto max-w-xs sm:max-w-sm mx-auto" role="img" aria-label="Your bouquet">
-      {/* Back layer stems */}
+      {/* Back layer stems — converge naturally */}
       {sortedFlowers.slice(0, visibleCount).map((f, i) => {
         const stemBottom = getStemBottom(f.layer);
-        const convergeX = f.x * 0.08;
+        const convergeX = f.x * 0.1;
         const midY = (f.y + stemBottom) / 2;
         return (
           <path
@@ -152,7 +156,7 @@ const BouquetCanvas: React.FC<Props> = ({ flowers, wrapColor, wrapAccent, artSty
             strokeWidth={f.layer === "front" ? 1.5 + f.scale * 0.3 : 0.8 + f.scale * 0.2}
             strokeLinecap="round"
             fill="none"
-            opacity={f.layer === "back" ? 0.35 : f.layer === "front" ? 0.55 : 0.4}
+            opacity={f.layer === "back" ? 0.3 : f.layer === "front" ? 0.5 : 0.4}
           />
         );
       })}
