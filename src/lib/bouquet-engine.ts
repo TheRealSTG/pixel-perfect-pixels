@@ -222,20 +222,22 @@ export function composeBouquet(
 
   const flowers: FlowerPlacement[] = [];
 
-  // === BACK LAYER: Greenery (wide arc, varied heights) ===
+  // === BACK LAYER: Greenery — tall, spread wide, varying heights ===
   const greenCount = 5 + Math.floor(rand() * 3); // 5-7
   for (let i = 0; i < greenCount; i++) {
-    const angle = ((i / greenCount) * 260 - 130) * (Math.PI / 180);
-    const radius = 38 + rand() * 35;
+    // Spread greenery in a wide fan behind the bouquet
+    const spreadX = ((i / (greenCount - 1)) * 2 - 1) * 55 + (rand() - 0.5) * 15;
     const type = palette.greenery[Math.floor(rand() * palette.greenery.length)];
     const natural = pickNatural(rand, type);
-    const heightJitter = rand() * 25;
+    // Taller at edges, shorter in middle — natural frame
+    const edgeFactor = Math.abs(spreadX) / 55;
+    const baseHeight = -60 - rand() * 50 - edgeFactor * 30;
     flowers.push({
       type,
-      x: Math.sin(angle) * radius + (rand() - 0.5) * 12,
-      y: -25 - heightJitter - rand() * 30 + Math.cos(angle) * radius * 0.15,
-      scale: 0.7 + rand() * 1.0,
-      rotation: (rand() - 0.5) * 70,
+      x: spreadX,
+      y: baseHeight,
+      scale: 0.8 + rand() * 0.8,
+      rotation: spreadX * 0.3 + (rand() - 0.5) * 20, // lean outward
       color: natural.color,
       accentColor: natural.accent,
       delay: i * 0.06,
@@ -243,19 +245,23 @@ export function composeBouquet(
     });
   }
 
-  // === MID LAYER: Secondary flowers (fill, texture) ===
-  const secCount = 4 + Math.floor(rand() * 3); // 4-6
+  // === MID LAYER: Secondary flowers — staggered heights, no overlap ===
+  const secCount = 4 + Math.floor(rand() * 2); // 4-5
+  const secSlots = Array.from({ length: secCount }, (_, i) => {
+    const t = (i / (secCount - 1)) * 2 - 1; // -1 to 1
+    return { x: t * 38 + (rand() - 0.5) * 12 };
+  });
   for (let i = 0; i < secCount; i++) {
-    const angle = ((i / secCount) * 220 - 110) * (Math.PI / 180);
-    const radius = 22 + rand() * 28;
     const type = palette.secondary[i % palette.secondary.length];
     const natural = pickNatural(rand, type, favouriteColour);
+    // Alternate heights: odd indices taller, even shorter
+    const heightBase = i % 2 === 0 ? -65 : -85;
     flowers.push({
       type,
-      x: Math.sin(angle) * radius + (rand() - 0.5) * 10,
-      y: -45 - rand() * 35 + Math.cos(angle) * radius * 0.15,
-      scale: 0.65 + rand() * 0.55,
-      rotation: (rand() - 0.5) * 45,
+      x: secSlots[i].x,
+      y: heightBase - rand() * 25,
+      scale: 0.6 + rand() * 0.5,
+      rotation: secSlots[i].x * 0.15 + (rand() - 0.5) * 20,
       color: natural.color,
       accentColor: natural.accent,
       delay: greenCount * 0.06 + i * 0.08,
@@ -263,26 +269,26 @@ export function composeBouquet(
     });
   }
 
-  // === FRONT LAYER: Focal flowers (hero, larger, prominent) ===
+  // === FRONT LAYER: Focal flowers — asymmetric triangle, prominent ===
   const mainCount = 3 + Math.floor(rand() * 2); // 3-4
-  // Arrange focals in a pleasing triangle / asymmetric cluster
-  const focalPositions = [
-    { ax: -0.4, ay: 0.8 },  // left high
-    { ax: 0.3, ay: 0.6 },   // right high
-    { ax: -0.1, ay: 0.4 },  // center-left
-    { ax: 0.5, ay: 0.3 },   // right lower
-    { ax: -0.5, ay: 0.5 },  // far left
+  // Intentional positions: tallest center-left, others step down
+  const focalSlots = [
+    { x: -12, y: -120 },  // tall center-left (hero)
+    { x: 16, y: -105 },   // right, slightly shorter
+    { x: -30, y: -90 },   // far left, shorter
+    { x: 28, y: -80 },    // far right, lowest
+    { x: 2, y: -95 },     // center fill
   ];
   for (let i = 0; i < mainCount; i++) {
-    const pos = focalPositions[i % focalPositions.length];
+    const slot = focalSlots[i % focalSlots.length];
     const type = palette.focal[i % palette.focal.length];
     const natural = pickNatural(rand, type, favouriteColour);
     flowers.push({
       type,
-      x: pos.ax * 55 + (rand() - 0.5) * 15,
-      y: -55 - pos.ay * 55 - rand() * 15,
-      scale: 1.2 + rand() * 0.8,
-      rotation: (rand() - 0.5) * 28,
+      x: slot.x + (rand() - 0.5) * 10,
+      y: slot.y + (rand() - 0.5) * 12,
+      scale: 1.1 + rand() * 0.6,
+      rotation: slot.x * 0.12 + (rand() - 0.5) * 15,
       color: natural.color,
       accentColor: natural.accent,
       delay: (greenCount + secCount) * 0.06 + i * 0.12,
@@ -290,16 +296,16 @@ export function composeBouquet(
     });
   }
 
-  // === Filler: baby's breath sprinkled in mid-layer gaps ===
-  const fillerCount = 3 + Math.floor(rand() * 2);
+  // === Filler: baby's breath in mid-layer gaps ===
+  const fillerCount = 2 + Math.floor(rand() * 2);
   for (let i = 0; i < fillerCount; i++) {
     const natural = pickNatural(rand, "babys_breath");
     flowers.push({
       type: "babys_breath",
-      x: (rand() - 0.5) * 80,
-      y: -35 - rand() * 30,
-      scale: 0.4 + rand() * 0.5,
-      rotation: (rand() - 0.5) * 60,
+      x: (rand() - 0.5) * 70,
+      y: -50 - rand() * 40,
+      scale: 0.4 + rand() * 0.4,
+      rotation: (rand() - 0.5) * 50,
       color: natural.color,
       accentColor: natural.accent,
       delay: (greenCount + secCount + mainCount) * 0.06 + i * 0.08,
