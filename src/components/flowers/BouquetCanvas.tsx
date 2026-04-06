@@ -143,23 +143,6 @@ const BouquetCanvas: React.FC<Props> = ({ flowers, wrapColor, wrapAccent, artSty
 
   return (
     <svg viewBox="-120 -160 240 300" className="w-full h-auto max-w-xs sm:max-w-sm mx-auto" role="img" aria-label="Your bouquet">
-      {/* Back layer stems — converge naturally */}
-      {sortedFlowers.slice(0, visibleCount).map((f, i) => {
-        const stemBottom = getStemBottom(f.layer);
-        const convergeX = f.x * 0.1;
-        const midY = (f.y + stemBottom) / 2;
-        return (
-          <path
-            key={`stem-${i}`}
-            d={`M ${f.x} ${f.y + 12 * f.scale} Q ${f.x * 0.5} ${midY}, ${convergeX} ${stemBottom}`}
-            stroke={f.type === "cherry_blossom" ? "#8B6040" : "#5A8A5A"}
-            strokeWidth={f.layer === "front" ? 1.5 + f.scale * 0.3 : 0.8 + f.scale * 0.2}
-            strokeLinecap="round"
-            fill="none"
-            opacity={f.layer === "back" ? 0.3 : f.layer === "front" ? 0.5 : 0.4}
-          />
-        );
-      })}
 
       {/* Wrap */}
       {renderWrap()}
