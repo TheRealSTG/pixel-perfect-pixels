@@ -80,7 +80,7 @@ const naturalColorRanges: Record<FlowerType, { colors: string[]; accents: string
 export const wrapStyles: Record<WrapStyle, { color: string; accent: string; label: string; emoji: string }> = {
   paper: { color: "#E8DDD0", accent: "#D4C8B8", label: "Craft Paper", emoji: "📜" },
   kraft: { color: "#C4A882", accent: "#A88A68", label: "Kraft Paper", emoji: "📦" },
-  tissue: { color: "#F0E8F0", accent: "#E0D0E0", label: "Tissue Paper", emoji: "🎀" },
+  tissue: { color: "#F0E8F0", accent: "#D4A0C0", label: "Tissue Paper", emoji: "🎀" },
   burlap: { color: "#B8A080", accent: "#988060", label: "Burlap Wrap", emoji: "🧵" },
   vase: { color: "#D8E8E8", accent: "#B8D0D0", label: "Glass Vase", emoji: "🏺" },
 };
@@ -103,7 +103,6 @@ const colourNameToHex: Record<string, string> = {
   lavender: "#9B7FBF", coral: "#E07060", peach: "#F0B898",
 };
 
-// Which flowers can be tinted toward which colours
 const allowedTints: Record<FlowerType, string[]> = {
   rose: ["red", "pink", "white", "coral", "peach", "lavender"],
   peony: ["pink", "white", "peach", "coral"],
@@ -129,13 +128,11 @@ const moodPalettes: Record<string, { wrap: WrapStyle; bg: string }> = {
   "love-you": { wrap: "tissue", bg: "#FFF5F5" },
 };
 
-// ─── Occasion → flower palettes (curated by florists) ───
-// Each sub-array is a "palette group" — the engine picks one group per bouquet
-// so all flowers harmonise (analogous, complementary, or monochromatic).
+// ─── Occasion → flower palettes (curated) ───
 interface OccasionPalette {
-  focal: FlowerType[];     // 2-3 hero flowers
-  secondary: FlowerType[]; // supporting / texture
-  greenery: FlowerType[];  // back-layer foliage
+  focal: FlowerType[];
+  secondary: FlowerType[];
+  greenery: FlowerType[];
 }
 
 const occasionPalettes: Record<string, OccasionPalette[]> = {
@@ -200,7 +197,9 @@ function pickNatural(rand: () => number, type: FlowerType, favouriteColour?: str
 }
 
 // ─── Professional arrangement layout ────────────────────
-// Uses a spiral + jitter approach for natural-looking density
+// Key principle: flowers sit INTO the wrap, no floating gap.
+// Wrap top edge is at y ≈ -15. Flower stems extend ~40px down from their y position.
+// So a flower at y=-55 has its stem bottom at y=-15, right at the wrap edge.
 
 export function composeBouquet(
   occasion: Occasion,
@@ -216,99 +215,94 @@ export function composeBouquet(
   const wrapStyle = moodInfo.wrap;
   const wrap = wrapStyles[wrapStyle];
 
-  // Pick a curated palette for this occasion
   const palettes = occasionPalettes[occasion] || occasionPalettes["birthday"];
   const palette = palettes[Math.floor(rand() * palettes.length)];
 
   const flowers: FlowerPlacement[] = [];
 
-  // === BACK LAYER: Greenery — tall, spread wide, varying heights ===
-  const greenCount = 5 + Math.floor(rand() * 3); // 5-7
+  // === BACK LAYER: Greenery — fans out wide, tall at edges, frames the bouquet ===
+  const greenCount = 7 + Math.floor(rand() * 3); // 7-9
   for (let i = 0; i < greenCount; i++) {
-    // Spread greenery in a wide fan behind the bouquet
-    const spreadX = ((i / (greenCount - 1)) * 2 - 1) * 55 + (rand() - 0.5) * 15;
-    const type = palette.greenery[Math.floor(rand() * palette.greenery.length)];
+    const t = i / (greenCount - 1); // 0 to 1
+    const spreadX = (t * 2 - 1) * 55 + (rand() - 0.5) * 12;
+    const type = palette.greenery[i % palette.greenery.length];
     const natural = pickNatural(rand, type);
-    // Taller at edges, shorter in middle — natural frame
-    const edgeFactor = Math.abs(spreadX) / 55;
-    const baseHeight = -60 - rand() * 50 - edgeFactor * 30;
+    const edgeFactor = Math.abs(t - 0.5) * 2;
+    const yPos = -70 - edgeFactor * 45 - rand() * 15;
     flowers.push({
       type,
       x: spreadX,
-      y: baseHeight,
-      scale: 0.8 + rand() * 0.8,
-      rotation: spreadX * 0.3 + (rand() - 0.5) * 20, // lean outward
+      y: yPos,
+      scale: 1.0 + rand() * 0.6 + edgeFactor * 0.4,
+      rotation: spreadX * 0.35 + (rand() - 0.5) * 15,
       color: natural.color,
       accentColor: natural.accent,
-      delay: i * 0.06,
+      delay: i * 0.04,
       layer: "back",
     });
   }
 
-  // === MID LAYER: Secondary flowers — staggered heights, no overlap ===
-  const secCount = 4 + Math.floor(rand() * 2); // 4-5
-  const secSlots = Array.from({ length: secCount }, (_, i) => {
-    const t = (i / (secCount - 1)) * 2 - 1; // -1 to 1
-    return { x: t * 38 + (rand() - 0.5) * 12 };
-  });
+  // === MID LAYER: Secondary flowers — fill gaps, medium scale ===
+  const secCount = 5 + Math.floor(rand() * 3); // 5-7
   for (let i = 0; i < secCount; i++) {
+    const t = i / (secCount - 1);
+    const spreadX = (t * 2 - 1) * 40 + (rand() - 0.5) * 12;
     const type = palette.secondary[i % palette.secondary.length];
     const natural = pickNatural(rand, type, favouriteColour);
-    // Alternate heights: odd indices taller, even shorter
-    const heightBase = i % 2 === 0 ? -65 : -85;
+    const yBase = i % 2 === 0 ? -55 : -75;
     flowers.push({
       type,
-      x: secSlots[i].x,
-      y: heightBase - rand() * 25,
-      scale: 0.6 + rand() * 0.5,
-      rotation: secSlots[i].x * 0.15 + (rand() - 0.5) * 20,
+      x: spreadX,
+      y: yBase - rand() * 15,
+      scale: 0.7 + rand() * 0.5,
+      rotation: spreadX * 0.2 + (rand() - 0.5) * 18,
       color: natural.color,
       accentColor: natural.accent,
-      delay: greenCount * 0.06 + i * 0.08,
+      delay: greenCount * 0.04 + i * 0.06,
       layer: "mid",
     });
   }
 
-  // === FRONT LAYER: Focal flowers — asymmetric triangle, prominent ===
-  const mainCount = 3 + Math.floor(rand() * 2); // 3-4
-  // Intentional positions: tallest center-left, others step down
-  const focalSlots = [
-    { x: -12, y: -120 },  // tall center-left (hero)
-    { x: 16, y: -105 },   // right, slightly shorter
-    { x: -30, y: -90 },   // far left, shorter
-    { x: 28, y: -80 },    // far right, lowest
-    { x: 2, y: -95 },     // center fill
+  // === FRONT LAYER: Focal flowers — large, prominent, asymmetric triangle ===
+  const focalCount = 3 + Math.floor(rand() * 2); // 3-4
+  const focalPositions = [
+    { x: -8, y: -100 },   // tall center-left hero
+    { x: 20, y: -85 },    // right, slightly shorter
+    { x: -30, y: -75 },   // far left
+    { x: 10, y: -80 },    // center-right fill
+    { x: -20, y: -90 },   // left secondary
   ];
-  for (let i = 0; i < mainCount; i++) {
-    const slot = focalSlots[i % focalSlots.length];
+  for (let i = 0; i < focalCount; i++) {
+    const pos = focalPositions[i % focalPositions.length];
     const type = palette.focal[i % palette.focal.length];
     const natural = pickNatural(rand, type, favouriteColour);
     flowers.push({
       type,
-      x: slot.x + (rand() - 0.5) * 10,
-      y: slot.y + (rand() - 0.5) * 12,
-      scale: 1.1 + rand() * 0.6,
-      rotation: slot.x * 0.12 + (rand() - 0.5) * 15,
+      x: pos.x + (rand() - 0.5) * 8,
+      y: pos.y + (rand() - 0.5) * 10,
+      scale: 1.3 + rand() * 0.6,
+      rotation: pos.x * 0.12 + (rand() - 0.5) * 10,
       color: natural.color,
       accentColor: natural.accent,
-      delay: (greenCount + secCount) * 0.06 + i * 0.12,
+      delay: (greenCount + secCount) * 0.04 + i * 0.1,
       layer: "front",
     });
   }
 
-  // === Filler: baby's breath in mid-layer gaps ===
-  const fillerCount = 2 + Math.floor(rand() * 2);
+  // === Filler: baby's breath scattered for fullness ===
+  const fillerCount = 4 + Math.floor(rand() * 3);
   for (let i = 0; i < fillerCount; i++) {
     const natural = pickNatural(rand, "babys_breath");
+    const x = (rand() - 0.5) * 60;
     flowers.push({
       type: "babys_breath",
-      x: (rand() - 0.5) * 70,
-      y: -50 - rand() * 40,
+      x,
+      y: -45 - rand() * 40,
       scale: 0.4 + rand() * 0.4,
-      rotation: (rand() - 0.5) * 50,
+      rotation: x * 0.3 + (rand() - 0.5) * 40,
       color: natural.color,
       accentColor: natural.accent,
-      delay: (greenCount + secCount + mainCount) * 0.06 + i * 0.08,
+      delay: (greenCount + secCount + focalCount) * 0.04 + i * 0.05,
       layer: "mid",
     });
   }
