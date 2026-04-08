@@ -221,25 +221,23 @@ export function composeBouquet(
   const flowers: FlowerPlacement[] = [];
 
   // === BACK LAYER: Greenery — fans out wide, tall at edges, frames the bouquet ===
-  // These appear BEHIND the wrap, creating depth
-  const greenCount = 5 + Math.floor(rand() * 2); // 5-6
+  const greenCount = 7 + Math.floor(rand() * 3); // 7-9
   for (let i = 0; i < greenCount; i++) {
     const t = i / (greenCount - 1); // 0 to 1
-    const spreadX = (t * 2 - 1) * 50 + (rand() - 0.5) * 10;
+    const spreadX = (t * 2 - 1) * 55 + (rand() - 0.5) * 12;
     const type = palette.greenery[i % palette.greenery.length];
     const natural = pickNatural(rand, type);
-    // Taller at edges for a natural fan shape
-    const edgeFactor = Math.abs(t - 0.5) * 2; // 0 at center, 1 at edges
-    const yPos = -65 - edgeFactor * 40 - rand() * 15;
+    const edgeFactor = Math.abs(t - 0.5) * 2;
+    const yPos = -70 - edgeFactor * 45 - rand() * 15;
     flowers.push({
       type,
       x: spreadX,
       y: yPos,
-      scale: 0.7 + rand() * 0.5 + edgeFactor * 0.3,
-      rotation: spreadX * 0.4 + (rand() - 0.5) * 15, // lean outward naturally
+      scale: 1.0 + rand() * 0.6 + edgeFactor * 0.4,
+      rotation: spreadX * 0.35 + (rand() - 0.5) * 15,
       color: natural.color,
       accentColor: natural.accent,
-      delay: i * 0.05,
+      delay: i * 0.04,
       layer: "back",
     });
   }
