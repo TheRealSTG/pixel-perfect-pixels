@@ -242,38 +242,35 @@ export function composeBouquet(
     });
   }
 
-  // === MID LAYER: Secondary flowers — fill the middle zone ===
-  // Placed so stems go into the wrap (y around -45 to -65)
-  const secCount = 4 + Math.floor(rand() * 2); // 4-5
+  // === MID LAYER: Secondary flowers — fill gaps, medium scale ===
+  const secCount = 5 + Math.floor(rand() * 3); // 5-7
   for (let i = 0; i < secCount; i++) {
-    const t = i / (secCount - 1); // 0 to 1
-    const spreadX = (t * 2 - 1) * 35 + (rand() - 0.5) * 10;
+    const t = i / (secCount - 1);
+    const spreadX = (t * 2 - 1) * 40 + (rand() - 0.5) * 12;
     const type = palette.secondary[i % palette.secondary.length];
     const natural = pickNatural(rand, type, favouriteColour);
-    // Alternate heights for rhythm
-    const yBase = i % 2 === 0 ? -55 : -70;
+    const yBase = i % 2 === 0 ? -55 : -75;
     flowers.push({
       type,
       x: spreadX,
       y: yBase - rand() * 15,
-      scale: 0.55 + rand() * 0.4,
+      scale: 0.7 + rand() * 0.5,
       rotation: spreadX * 0.2 + (rand() - 0.5) * 18,
       color: natural.color,
       accentColor: natural.accent,
-      delay: greenCount * 0.05 + i * 0.07,
+      delay: greenCount * 0.04 + i * 0.06,
       layer: "mid",
     });
   }
 
-  // === FRONT LAYER: Focal flowers — the stars, asymmetric triangle ===
-  // These are prominent and sit above the wrap
+  // === FRONT LAYER: Focal flowers — large, prominent, asymmetric triangle ===
   const focalCount = 3 + Math.floor(rand() * 2); // 3-4
   const focalPositions = [
-    { x: -10, y: -95 },  // tall center-left hero
-    { x: 18, y: -82 },   // right, slightly shorter
-    { x: -28, y: -72 },  // far left
-    { x: 8, y: -78 },    // center-right fill
-    { x: -18, y: -85 },  // left secondary
+    { x: -8, y: -100 },   // tall center-left hero
+    { x: 20, y: -85 },    // right, slightly shorter
+    { x: -30, y: -75 },   // far left
+    { x: 10, y: -80 },    // center-right fill
+    { x: -20, y: -90 },   // left secondary
   ];
   for (let i = 0; i < focalCount; i++) {
     const pos = focalPositions[i % focalPositions.length];
@@ -283,29 +280,29 @@ export function composeBouquet(
       type,
       x: pos.x + (rand() - 0.5) * 8,
       y: pos.y + (rand() - 0.5) * 10,
-      scale: 1.0 + rand() * 0.5,
-      rotation: pos.x * 0.15 + (rand() - 0.5) * 12,
+      scale: 1.3 + rand() * 0.6,
+      rotation: pos.x * 0.12 + (rand() - 0.5) * 10,
       color: natural.color,
       accentColor: natural.accent,
-      delay: (greenCount + secCount) * 0.05 + i * 0.1,
+      delay: (greenCount + secCount) * 0.04 + i * 0.1,
       layer: "front",
     });
   }
 
-  // === Filler: baby's breath scattered in mid layer ===
-  const fillerCount = 3 + Math.floor(rand() * 2);
+  // === Filler: baby's breath scattered for fullness ===
+  const fillerCount = 4 + Math.floor(rand() * 3);
   for (let i = 0; i < fillerCount; i++) {
     const natural = pickNatural(rand, "babys_breath");
-    const x = (rand() - 0.5) * 55;
+    const x = (rand() - 0.5) * 60;
     flowers.push({
       type: "babys_breath",
       x,
-      y: -50 - rand() * 30,
-      scale: 0.35 + rand() * 0.35,
+      y: -45 - rand() * 40,
+      scale: 0.4 + rand() * 0.4,
       rotation: x * 0.3 + (rand() - 0.5) * 40,
       color: natural.color,
       accentColor: natural.accent,
-      delay: (greenCount + secCount + focalCount) * 0.05 + i * 0.06,
+      delay: (greenCount + secCount + focalCount) * 0.04 + i * 0.05,
       layer: "mid",
     });
   }
