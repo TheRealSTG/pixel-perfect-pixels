@@ -220,20 +220,40 @@ export function composeBouquet(
 
   const flowers: FlowerPlacement[] = [];
 
+  // Collision avoidance: track placed flower centers (x,y) to prevent full overlap
+  const placed: { x: number; y: number; scale: number }[] = [];
+  const nudgeAway = (x: number, y: number, scale: number, minDist: number): { x: number; y: number } => {
+    let nx = x, ny = y;
+    for (const p of placed) {
+      const dx = nx - p.x;
+      const dy = ny - p.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      const threshold = minDist * ((scale + p.scale) / 2);
+      if (dist < threshold) {
+        const angle = Math.atan2(dy, dx) || (Math.random() * Math.PI * 2);
+        const push = (threshold - dist) * 0.6;
+        nx += Math.cos(angle) * push;
+        ny += Math.sin(angle) * push;
+      }
+    }
+    return { x: nx, y: ny };
+  };
+
   // === BACK LAYER: Greenery — fans out wide, tall at edges, frames the bouquet ===
   const greenCount = 7 + Math.floor(rand() * 3); // 7-9
   for (let i = 0; i < greenCount; i++) {
     const t = i / (greenCount - 1); // 0 to 1
-    const spreadX = (t * 2 - 1) * 55 + (rand() - 0.5) * 12;
+    const spreadX = (t * 2 - 1) * 60 + (rand() - 0.5) * 10;
     const type = palette.greenery[i % palette.greenery.length];
     const natural = pickNatural(rand, type);
     const edgeFactor = Math.abs(t - 0.5) * 2;
-    const yPos = -70 - edgeFactor * 45 - rand() * 15;
+    const yPos = -60 - edgeFactor * 50 - rand() * 15;
+    const scale = 1.2 + rand() * 0.6 + edgeFactor * 0.5;
     flowers.push({
       type,
       x: spreadX,
       y: yPos,
-      scale: 1.0 + rand() * 0.6 + edgeFactor * 0.4,
+      scale,
       rotation: spreadX * 0.35 + (rand() - 0.5) * 15,
       color: natural.color,
       accentColor: natural.accent,
@@ -242,20 +262,24 @@ export function composeBouquet(
     });
   }
 
-  // === MID LAYER: Secondary flowers — fill gaps, medium scale ===
+  // === MID LAYER: Secondary flowers — spread out, medium-large scale ===
   const secCount = 5 + Math.floor(rand() * 3); // 5-7
   for (let i = 0; i < secCount; i++) {
     const t = i / (secCount - 1);
-    const spreadX = (t * 2 - 1) * 40 + (rand() - 0.5) * 12;
+    const rawX = (t * 2 - 1) * 45 + (rand() - 0.5) * 10;
+    const yBase = i % 2 === 0 ? -50 : -72;
+    const rawY = yBase - rand() * 15;
+    const scale = 1.0 + rand() * 0.5;
     const type = palette.secondary[i % palette.secondary.length];
     const natural = pickNatural(rand, type, favouriteColour);
-    const yBase = i % 2 === 0 ? -55 : -75;
+    const pos = nudgeAway(rawX, rawY, scale, 18);
+    placed.push({ x: pos.x, y: pos.y, scale });
     flowers.push({
       type,
-      x: spreadX,
-      y: yBase - rand() * 15,
-      scale: 0.7 + rand() * 0.5,
-      rotation: spreadX * 0.2 + (rand() - 0.5) * 18,
+      x: pos.x,
+      y: pos.y,
+      scale,
+      rotation: pos.x * 0.2 + (rand() - 0.5) * 18,
       color: natural.color,
       accentColor: natural.accent,
       delay: greenCount * 0.04 + i * 0.06,
@@ -263,25 +287,30 @@ export function composeBouquet(
     });
   }
 
-  // === FRONT LAYER: Focal flowers — large, prominent, asymmetric triangle ===
+  // === FRONT LAYER: Focal flowers — large, prominent, well-spaced ===
   const focalCount = 3 + Math.floor(rand() * 2); // 3-4
   const focalPositions = [
-    { x: -8, y: -100 },   // tall center-left hero
-    { x: 20, y: -85 },    // right, slightly shorter
-    { x: -30, y: -75 },   // far left
-    { x: 10, y: -80 },    // center-right fill
-    { x: -20, y: -90 },   // left secondary
+    { x: -5, y: -105 },   // tall center-left hero
+    { x: 25, y: -85 },    // right, slightly shorter
+    { x: -35, y: -75 },   // far left
+    { x: 12, y: -78 },    // center-right fill
+    { x: -22, y: -92 },   // left secondary
   ];
   for (let i = 0; i < focalCount; i++) {
-    const pos = focalPositions[i % focalPositions.length];
+    const base = focalPositions[i % focalPositions.length];
     const type = palette.focal[i % palette.focal.length];
     const natural = pickNatural(rand, type, favouriteColour);
+    const scale = 1.6 + rand() * 0.5;
+    const rawX = base.x + (rand() - 0.5) * 6;
+    const rawY = base.y + (rand() - 0.5) * 8;
+    const pos = nudgeAway(rawX, rawY, scale, 22);
+    placed.push({ x: pos.x, y: pos.y, scale });
     flowers.push({
       type,
-      x: pos.x + (rand() - 0.5) * 8,
-      y: pos.y + (rand() - 0.5) * 10,
-      scale: 1.3 + rand() * 0.6,
-      rotation: pos.x * 0.12 + (rand() - 0.5) * 10,
+      x: pos.x,
+      y: pos.y,
+      scale,
+      rotation: pos.x * 0.1 + (rand() - 0.5) * 8,
       color: natural.color,
       accentColor: natural.accent,
       delay: (greenCount + secCount) * 0.04 + i * 0.1,
@@ -293,13 +322,16 @@ export function composeBouquet(
   const fillerCount = 4 + Math.floor(rand() * 3);
   for (let i = 0; i < fillerCount; i++) {
     const natural = pickNatural(rand, "babys_breath");
-    const x = (rand() - 0.5) * 60;
+    const rawX = (rand() - 0.5) * 65;
+    const rawY = -40 - rand() * 45;
+    const scale = 0.5 + rand() * 0.4;
+    const pos = nudgeAway(rawX, rawY, scale, 12);
     flowers.push({
       type: "babys_breath",
-      x,
-      y: -45 - rand() * 40,
-      scale: 0.4 + rand() * 0.4,
-      rotation: x * 0.3 + (rand() - 0.5) * 40,
+      x: pos.x,
+      y: pos.y,
+      scale,
+      rotation: pos.x * 0.3 + (rand() - 0.5) * 40,
       color: natural.color,
       accentColor: natural.accent,
       delay: (greenCount + secCount + focalCount) * 0.04 + i * 0.05,
