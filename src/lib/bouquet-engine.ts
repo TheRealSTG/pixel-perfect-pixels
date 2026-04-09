@@ -252,18 +252,16 @@ export function composeBouquet(
   const flowers: FlowerPlacement[] = [];
   const placed: { x: number; y: number; scale: number }[] = [];
 
-  // === BACK LAYER: Greenery — fans out wide behind everything ===
-  // These render BEHIND the wrap for depth
+  // === BACK LAYER: Greenery — fans out behind, framing the bouquet ===
   const greenCount = 5 + Math.floor(rand() * 3); // 5-7
   for (let i = 0; i < greenCount; i++) {
     const t = i / (greenCount - 1); // 0→1, left→right
-    const spreadX = (t * 2 - 1) * 55 + (rand() - 0.5) * 8;
+    const spreadX = (t * 2 - 1) * 35 + (rand() - 0.5) * 6;
     const type = palette.greenery[i % palette.greenery.length];
     const natural = pickNatural(rand, type);
     const edgeFactor = Math.abs(t - 0.5) * 2; // 0 center, 1 edge
-    // Greenery sits just above the wrap — tall at edges for a fan shape
-    const yPos = -20 - edgeFactor * 40 - rand() * 10;
-    const scale = 1.4 + rand() * 0.5 + edgeFactor * 0.4;
+    const yPos = -10 - edgeFactor * 30 - rand() * 8;
+    const scale = 1.2 + rand() * 0.4 + edgeFactor * 0.3;
     // Rotate outward from center for natural fan
     const rotation = spreadX * 0.4 + (rand() - 0.5) * 12;
     flowers.push({
