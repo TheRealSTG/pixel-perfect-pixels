@@ -271,71 +271,73 @@ export function composeBouquet(
     });
   }
 
-  // === MID LAYER: Secondary flowers — fill the middle ring ===
-  const secCount = 5 + Math.floor(rand() * 3); // 5-7
-  const secAngles = Array.from({ length: secCount }, (_, i) => {
-    // Distribute in a ring around center
-    const angle = (i / secCount) * Math.PI * 2 + rand() * 0.3;
-    return angle;
+  // Clamp to keep flowers within bouquet bounds
+  const clamp = (pos: { x: number; y: number }) => ({
+    x: Math.max(-45, Math.min(45, pos.x)),
+    y: Math.max(-75, Math.min(5, pos.y)),
   });
+
+  // === MID LAYER: Secondary flowers — ring around center ===
+  const secCount = 4 + Math.floor(rand() * 3); // 4-6
   for (let i = 0; i < secCount; i++) {
-    const angle = secAngles[i];
-    const radius = 20 + rand() * 15;
-    const rawX = Math.cos(angle) * radius * 1.2; // wider horizontally
-    const rawY = -35 + Math.sin(angle) * radius * 0.6; // compressed vertically
-    const scale = 1.3 + rand() * 0.5;
+    const angle = (i / secCount) * Math.PI * 2 + rand() * 0.3;
+    const radius = 14 + rand() * 10;
+    const rawX = Math.cos(angle) * radius;
+    const rawY = -28 + Math.sin(angle) * radius * 0.5;
+    const scale = 1.2 + rand() * 0.4;
     const type = palette.secondary[i % palette.secondary.length];
     const natural = pickNatural(rand, type, favouriteColour);
-    const pos = nudgeAway(rawX, rawY, scale, placed, 16, rand);
+    const nudged = nudgeAway(rawX, rawY, scale, placed, 14, rand);
+    const pos = clamp(nudged);
     placed.push({ x: pos.x, y: pos.y, scale });
     flowers.push({
       type, x: pos.x, y: pos.y, scale,
-      rotation: pos.x * 0.15 + (rand() - 0.5) * 15,
+      rotation: pos.x * 0.15 + (rand() - 0.5) * 12,
       color: natural.color, accentColor: natural.accent,
       delay: greenCount * 0.03 + i * 0.05, layer: "mid",
     });
   }
 
-  // === FRONT LAYER: Focal flowers — large, dominant, well-spaced ===
+  // === FRONT LAYER: Focal flowers — large, dominant, triangular ===
   const focalCount = 3 + Math.floor(rand() * 2); // 3-4
-  // Hand-crafted positions for a natural triangular arrangement
   const focalPositions = [
-    { x: 0, y: -58 },    // crown — tallest center
-    { x: -22, y: -42 },  // left
-    { x: 22, y: -45 },   // right
-    { x: -8, y: -38 },   // center-left fill
-    { x: 12, y: -52 },   // center-right higher
+    { x: 0, y: -48 },    // crown center
+    { x: -16, y: -34 },  // left
+    { x: 16, y: -36 },   // right
+    { x: -6, y: -30 },   // fill left
+    { x: 8, y: -42 },    // fill right higher
   ];
   for (let i = 0; i < focalCount; i++) {
     const base = focalPositions[i % focalPositions.length];
     const type = palette.focal[i % palette.focal.length];
     const natural = pickNatural(rand, type, favouriteColour);
-    const scale = 2.0 + rand() * 0.6; // large and prominent
-    const rawX = base.x + (rand() - 0.5) * 6;
-    const rawY = base.y + (rand() - 0.5) * 5;
-    const pos = nudgeAway(rawX, rawY, scale, placed, 20, rand);
+    const scale = 1.8 + rand() * 0.5;
+    const rawX = base.x + (rand() - 0.5) * 5;
+    const rawY = base.y + (rand() - 0.5) * 4;
+    const nudged = nudgeAway(rawX, rawY, scale, placed, 18, rand);
+    const pos = clamp(nudged);
     placed.push({ x: pos.x, y: pos.y, scale });
     flowers.push({
       type, x: pos.x, y: pos.y, scale,
-      rotation: pos.x * 0.08 + (rand() - 0.5) * 8,
+      rotation: pos.x * 0.08 + (rand() - 0.5) * 6,
       color: natural.color, accentColor: natural.accent,
       delay: (greenCount + secCount) * 0.03 + i * 0.08, layer: "front",
     });
   }
 
-  // === Filler: baby's breath scattered in gaps ===
-  const fillerCount = 5 + Math.floor(rand() * 3); // 5-7
+  // === Filler: baby's breath in gaps ===
+  const fillerCount = 4 + Math.floor(rand() * 3); // 4-6
   for (let i = 0; i < fillerCount; i++) {
     const natural = pickNatural(rand, "babys_breath");
-    // Scatter across the bouquet area
-    const rawX = (rand() - 0.5) * 70;
-    const rawY = -15 - rand() * 45;
-    const scale = 0.6 + rand() * 0.5;
-    const pos = nudgeAway(rawX, rawY, scale, placed, 10, rand);
+    const rawX = (rand() - 0.5) * 50;
+    const rawY = -10 - rand() * 35;
+    const scale = 0.5 + rand() * 0.4;
+    const nudged = nudgeAway(rawX, rawY, scale, placed, 8, rand);
+    const pos = clamp(nudged);
     flowers.push({
       type: "babys_breath",
       x: pos.x, y: pos.y, scale,
-      rotation: (rand() - 0.5) * 40,
+      rotation: (rand() - 0.5) * 35,
       color: natural.color, accentColor: natural.accent,
       delay: (greenCount + secCount + focalCount) * 0.03 + i * 0.04,
       layer: "mid",
