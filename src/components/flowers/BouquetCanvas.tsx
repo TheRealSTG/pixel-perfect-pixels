@@ -229,6 +229,31 @@ const BouquetCanvas: React.FC<Props> = ({ flowers, wrapColor, wrapAccent, artSty
       {/* Back layer flowers (behind wrap) */}
       {backLayerFlowers.slice(0, Math.min(backLayerFlowers.length, visibleCount)).map((f, i) => renderFlower(f, i))}
 
+      {/* Stems converging into the wrap (rendered behind wrap, in front of back greenery) */}
+      {midFrontFlowers.slice(0, Math.max(0, visibleCount - backLayerFlowers.length)).map((f, i) => {
+        // Stem starts a touch below the bloom and ends inside the wrap top.
+        const startY = f.y + 4 * f.scale;
+        const endY = 22; // inside the wrap
+        const baseLen = endY - startY;
+        const len = baseLen * stemLength;
+        const ey = startY + len;
+        // Slight curve toward center based on x
+        const midX = f.x * (1 - 0.45 * stemLength);
+        const midY = startY + len * 0.55;
+        const ex = f.x * (1 - 0.85 * stemLength);
+        return (
+          <path
+            key={`stem-${i}`}
+            d={`M ${f.x} ${startY} Q ${midX} ${midY}, ${ex} ${ey}`}
+            stroke="#5A8A5A"
+            strokeWidth={1 + 0.4 * f.scale}
+            fill="none"
+            opacity={0.7}
+            strokeLinecap="round"
+          />
+        );
+      })}
+
       {/* Wrap */}
       {renderWrap()}
 
