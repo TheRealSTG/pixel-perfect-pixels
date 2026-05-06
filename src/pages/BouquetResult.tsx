@@ -32,7 +32,7 @@ const BouquetResult = () => {
 
   const composition = customFlowers
     ? { flowers: customFlowers, wrapColor: "#E8DDD0", wrapAccent: "#D4C8B8", backgroundColor: "#F8F5F0", wrapStyle: (customWrapStyle || "paper") as WrapStyle }
-    : composeBouquet(config.occasion, config.mood, config.artStyle, config.recipient.name, config.recipient.favouriteColour);
+    : composeBouquet(config.occasion, config.mood, config.artStyle, config.recipient.name, config.recipient.favouriteColour, config.recipient.city);
 
   return (
     <div className="min-h-screen bg-background">
