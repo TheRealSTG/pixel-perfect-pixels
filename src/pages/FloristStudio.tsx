@@ -238,6 +238,17 @@ const FloristStudio = () => {
 
         {/* Canvas */}
         <div className="flex-1 flex flex-col">
+          {/* Stem length control */}
+          <div className="mb-2 flex items-center gap-3 px-2">
+            <label className="text-[11px] font-sans text-muted-foreground whitespace-nowrap">🌱 Stem length</label>
+            <input
+              type="range" min="50" max="160"
+              value={Math.round(stemLength * 100)}
+              onChange={(e) => setStemLength(Number(e.target.value) / 100)}
+              className="flex-1 h-1.5 accent-primary"
+            />
+            <span className="text-[10px] font-sans text-muted-foreground w-10 text-right">{Math.round(stemLength * 100)}%</span>
+          </div>
           <div className="bg-card rounded-2xl border border-border flex-1 min-h-[400px] flex items-center justify-center relative overflow-hidden">
             {flowers.length === 0 ? (
               <p className="text-muted-foreground font-sans text-sm">Tap a flower to start 🌸</p>
