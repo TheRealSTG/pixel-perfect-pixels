@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { flowerComponents } from "@/components/flowers/FlowerSVGs";
 import type { ArtStyle } from "@/lib/bouquet-data";
 import type { BouquetLayer, WrapStyle } from "@/lib/bouquet-engine";
+import WrapRenderer from "@/components/flowers/WrapRenderer";
 
 interface FlowerPlacement {
   type: keyof typeof flowerComponents;
