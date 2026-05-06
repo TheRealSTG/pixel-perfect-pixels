@@ -147,6 +147,7 @@ const FloristStudio = () => {
                 state: {
                   config,
                   wrapStyle,
+                  stemLength,
                   customFlowers: flowers.map((f) => ({
                     type: f.type, x: f.x, y: f.y, scale: f.scale,
                     rotation: f.rotation, color: f.color, accentColor: f.accentColor, delay: 0, layer: f.layer,
