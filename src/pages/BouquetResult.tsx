@@ -7,6 +7,7 @@ interface LocationState {
   config: BouquetConfig;
   customFlowers?: Parameters<typeof BouquetCanvas>[0]["flowers"];
   wrapStyle?: WrapStyle;
+  stemLength?: number;
 }
 
 const BouquetResult = () => {
@@ -16,6 +17,7 @@ const BouquetResult = () => {
   const config = state?.config;
   const customFlowers = state?.customFlowers;
   const customWrapStyle = state?.wrapStyle;
+  const customStemLength = state?.stemLength;
   if (!config) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -66,6 +68,7 @@ const BouquetResult = () => {
             artStyle={config.artStyle}
             animated={true}
             wrapStyle={composition.wrapStyle}
+            stemLength={customStemLength ?? 1}
           />
         </div>
 
