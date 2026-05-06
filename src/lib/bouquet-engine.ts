@@ -1,7 +1,7 @@
 import type { Occasion, Mood, ArtStyle } from "@/lib/bouquet-data";
 import type { FlowerType } from "@/components/flowers/FlowerSVGs";
 
-export type WrapStyle = "paper" | "kraft" | "tissue" | "burlap" | "vase";
+export type WrapStyle = "paper" | "kraft" | "tissue" | "burlap" | "vase" | "handtied" | "cone";
 export type BouquetLayer = "back" | "mid" | "front";
 
 export interface FlowerPlacement {
@@ -83,6 +83,8 @@ export const wrapStyles: Record<WrapStyle, { color: string; accent: string; labe
   tissue: { color: "#F0E8F0", accent: "#D4A0C0", label: "Tissue Paper", emoji: "🎀" },
   burlap: { color: "#B8A080", accent: "#988060", label: "Burlap Wrap", emoji: "🧵" },
   vase: { color: "#D8E8E8", accent: "#B8D0D0", label: "Glass Vase", emoji: "🏺" },
+  handtied: { color: "#EFE6D8", accent: "#B89878", label: "Hand-Tied", emoji: "🎗️" },
+  cone: { color: "#F4ECE0", accent: "#C8A878", label: "Cone Bouquet", emoji: "🌷" },
 };
 
 // ─── Color utilities ────────────────────────────────────
@@ -119,13 +121,14 @@ const allowedTints: Record<FlowerType, string[]> = {
 };
 
 // ─── Mood palettes ──────────────────────────────────────
-const moodPalettes: Record<string, { wrap: WrapStyle; bg: string }> = {
-  "thinking-of-you": { wrap: "tissue", bg: "#F8F5F0" },
-  "proud-of-you": { wrap: "kraft", bg: "#FDFAF0" },
-  "missing-you": { wrap: "tissue", bg: "#F8F4F8" },
-  "celebrating-you": { wrap: "paper", bg: "#FFF8F0" },
-  "just-because": { wrap: "paper", bg: "#F8F6F0" },
-  "love-you": { wrap: "tissue", bg: "#FFF5F5" },
+// Mood influences wrap style, background, color tint, and saturation.
+const moodPalettes: Record<string, { wrap: WrapStyle; bg: string; tint?: string; tintAmount: number }> = {
+  "thinking-of-you": { wrap: "handtied", bg: "#F4F1EA", tint: "#9B7FBF", tintAmount: 0.12 },
+  "proud-of-you":    { wrap: "kraft",    bg: "#FDFAF0", tint: "#F4C430", tintAmount: 0.15 },
+  "missing-you":     { wrap: "tissue",   bg: "#F8F4F8", tint: "#7B68AE", tintAmount: 0.18 },
+  "celebrating-you": { wrap: "cone",     bg: "#FFF8F0", tint: "#E8A040", tintAmount: 0.12 },
+  "just-because":    { wrap: "handtied", bg: "#F8F6F0", tintAmount: 0 },
+  "love-you":        { wrap: "tissue",   bg: "#FFF5F5", tint: "#E04050", tintAmount: 0.18 },
 };
 
 // ─── Occasion → flower palettes (curated) ───
@@ -179,7 +182,12 @@ function seededRandom(seed: number) {
   };
 }
 
-function pickNatural(rand: () => number, type: FlowerType, favouriteColour?: string): { color: string; accent: string } {
+function pickNatural(
+  rand: () => number,
+  type: FlowerType,
+  favouriteColour?: string,
+  moodTint?: { color: string; amount: number }
+): { color: string; accent: string } {
   const range = naturalColorRanges[type];
   const idx = Math.floor(rand() * range.colors.length);
   let color = range.colors[idx];
@@ -191,6 +199,12 @@ function pickNatural(rand: () => number, type: FlowerType, favouriteColour?: str
       color = blendColors(color, hex, 0.25);
       accent = blendColors(accent, hex, 0.15);
     }
+  }
+
+  // Mood tint applies subtly to non-greenery so the whole bouquet shares a vibe.
+  if (moodTint && moodTint.amount > 0 && type !== "eucalyptus" && type !== "fern") {
+    color = blendColors(color, moodTint.color, moodTint.amount);
+    accent = blendColors(accent, moodTint.color, moodTint.amount * 0.6);
   }
 
   return { color, accent };
@@ -237,14 +251,22 @@ export function composeBouquet(
   mood: Mood,
   _artStyle: ArtStyle,
   recipientName: string,
-  favouriteColour?: string
+  favouriteColour?: string,
+  city?: string
 ): BouquetComposition {
-  const seed = recipientName.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0) + 42;
+  const hashStr = (s: string) => s.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
+  const seed =
+    hashStr(recipientName) * 31 +
+    hashStr(occasion) * 17 +
+    hashStr(mood) * 7 +
+    hashStr(city || "") * 3 +
+    42;
   const rand = seededRandom(seed);
 
   const moodInfo = moodPalettes[mood] || moodPalettes["just-because"];
   const wrapStyle = moodInfo.wrap;
   const wrap = wrapStyles[wrapStyle];
+  const moodTint = moodInfo.tint ? { color: moodInfo.tint, amount: moodInfo.tintAmount } : undefined;
 
   const palettes = occasionPalettes[occasion] || occasionPalettes["birthday"];
   const palette = palettes[Math.floor(rand() * palettes.length)];
@@ -252,42 +274,43 @@ export function composeBouquet(
   const flowers: FlowerPlacement[] = [];
   const placed: { x: number; y: number; scale: number }[] = [];
 
-  // === BACK LAYER: Greenery — fans out behind, framing the bouquet ===
-  const greenCount = 5 + Math.floor(rand() * 3); // 5-7
+  // Clamp keeps blooms above the wrap top (wrap top ≈ y=10, so y_max=-8).
+  const clamp = (pos: { x: number; y: number }) => ({
+    x: Math.max(-58, Math.min(58, pos.x)),
+    y: Math.max(-82, Math.min(-8, pos.y)),
+  });
+
+  // === BACK LAYER: Greenery — fans wide behind, framing the bouquet ===
+  const greenCount = 9 + Math.floor(rand() * 3); // 9-11
   for (let i = 0; i < greenCount; i++) {
     const t = i / (greenCount - 1); // 0→1, left→right
-    const spreadX = (t * 2 - 1) * 35 + (rand() - 0.5) * 6;
+    const spreadX = (t * 2 - 1) * 55 + (rand() - 0.5) * 8;
     const type = palette.greenery[i % palette.greenery.length];
     const natural = pickNatural(rand, type);
     const edgeFactor = Math.abs(t - 0.5) * 2; // 0 center, 1 edge
-    const yPos = -10 - edgeFactor * 30 - rand() * 8;
-    const scale = 1.2 + rand() * 0.4 + edgeFactor * 0.3;
+    const yPos = -22 - edgeFactor * 38 - rand() * 6;
+    const scale = 1.4 + rand() * 0.5 + edgeFactor * 0.4;
     // Rotate outward from center for natural fan
-    const rotation = spreadX * 0.4 + (rand() - 0.5) * 12;
+    const rotation = (t - 0.5) * 70 + (rand() - 0.5) * 14;
+    const pos = clamp({ x: spreadX, y: yPos });
     flowers.push({
-      type, x: spreadX, y: yPos, scale, rotation,
+      type, x: pos.x, y: pos.y, scale, rotation,
       color: natural.color, accentColor: natural.accent,
       delay: i * 0.03, layer: "back",
     });
   }
 
-  // Clamp to keep flowers within bouquet bounds
-  const clamp = (pos: { x: number; y: number }) => ({
-    x: Math.max(-45, Math.min(45, pos.x)),
-    y: Math.max(-75, Math.min(5, pos.y)),
-  });
-
   // === MID LAYER: Secondary flowers — ring around center ===
-  const secCount = 4 + Math.floor(rand() * 3); // 4-6
+  const secCount = 7 + Math.floor(rand() * 3); // 7-9
   for (let i = 0; i < secCount; i++) {
     const angle = (i / secCount) * Math.PI * 2 + rand() * 0.3;
-    const radius = 14 + rand() * 10;
+    const radius = 18 + rand() * 12;
     const rawX = Math.cos(angle) * radius;
-    const rawY = -28 + Math.sin(angle) * radius * 0.5;
-    const scale = 1.2 + rand() * 0.4;
+    const rawY = -34 + Math.sin(angle) * radius * 0.55;
+    const scale = 1.15 + rand() * 0.45;
     const type = palette.secondary[i % palette.secondary.length];
-    const natural = pickNatural(rand, type, favouriteColour);
-    const nudged = nudgeAway(rawX, rawY, scale, placed, 14, rand);
+    const natural = pickNatural(rand, type, favouriteColour, moodTint);
+    const nudged = nudgeAway(rawX, rawY, scale, placed, 13, rand);
     const pos = clamp(nudged);
     placed.push({ x: pos.x, y: pos.y, scale });
     flowers.push({
@@ -299,19 +322,20 @@ export function composeBouquet(
   }
 
   // === FRONT LAYER: Focal flowers — large, dominant, triangular ===
-  const focalCount = 3 + Math.floor(rand() * 2); // 3-4
+  const focalCount = 4 + Math.floor(rand() * 2); // 4-5
   const focalPositions = [
-    { x: 0, y: -48 },    // crown center
-    { x: -16, y: -34 },  // left
-    { x: 16, y: -36 },   // right
-    { x: -6, y: -30 },   // fill left
-    { x: 8, y: -42 },    // fill right higher
+    { x: 0, y: -52 },    // crown center
+    { x: -20, y: -36 },  // left
+    { x: 20, y: -38 },   // right
+    { x: -8, y: -28 },   // fill front-left
+    { x: 10, y: -44 },   // fill upper-right
+    { x: -2, y: -62 },   // top
   ];
   for (let i = 0; i < focalCount; i++) {
     const base = focalPositions[i % focalPositions.length];
     const type = palette.focal[i % palette.focal.length];
-    const natural = pickNatural(rand, type, favouriteColour);
-    const scale = 1.8 + rand() * 0.5;
+    const natural = pickNatural(rand, type, favouriteColour, moodTint);
+    const scale = 1.7 + rand() * 0.5;
     const rawX = base.x + (rand() - 0.5) * 5;
     const rawY = base.y + (rand() - 0.5) * 4;
     const nudged = nudgeAway(rawX, rawY, scale, placed, 18, rand);
@@ -326,12 +350,12 @@ export function composeBouquet(
   }
 
   // === Filler: baby's breath in gaps ===
-  const fillerCount = 4 + Math.floor(rand() * 3); // 4-6
+  const fillerCount = 8 + Math.floor(rand() * 3); // 8-10
   for (let i = 0; i < fillerCount; i++) {
-    const natural = pickNatural(rand, "babys_breath");
-    const rawX = (rand() - 0.5) * 50;
-    const rawY = -10 - rand() * 35;
-    const scale = 0.5 + rand() * 0.4;
+    const natural = pickNatural(rand, "babys_breath", undefined, moodTint);
+    const rawX = (rand() - 0.5) * 70;
+    const rawY = -16 - rand() * 45;
+    const scale = 0.55 + rand() * 0.45;
     const nudged = nudgeAway(rawX, rawY, scale, placed, 8, rand);
     const pos = clamp(nudged);
     flowers.push({
