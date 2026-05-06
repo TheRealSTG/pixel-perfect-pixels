@@ -22,9 +22,11 @@ interface Props {
   artStyle: ArtStyle;
   animated?: boolean;
   wrapStyle?: WrapStyle;
+  /** 0.5 short → 1.5 long. Default 1. */
+  stemLength?: number;
 }
 
-const BouquetCanvas: React.FC<Props> = ({ flowers, wrapColor, wrapAccent, artStyle, animated = true, wrapStyle = "paper" }) => {
+const BouquetCanvas: React.FC<Props> = ({ flowers, wrapColor, wrapAccent, artStyle, animated = true, wrapStyle = "paper", stemLength = 1 }) => {
   const [visibleCount, setVisibleCount] = useState(animated ? 0 : flowers.length);
 
   useEffect(() => {
@@ -54,6 +56,55 @@ const BouquetCanvas: React.FC<Props> = ({ flowers, wrapColor, wrapAccent, artSty
   const renderWrap = () => {
     // Wrap sits in the lower portion: top ~y=10, bottom ~y=70
     switch (wrapStyle) {
+      case "handtied":
+        // Slim hand-tied bunch: tapered stems gathered with a ribbon, no pot/cone shape
+        return (
+          <>
+            {/* Stem bundle */}
+            <path d="M -14 10 Q -8 30, -4 60 L 4 60 Q 8 30, 14 10 Z"
+              fill="#6B5A3E" opacity={0.55} />
+            {/* Individual stem hints */}
+            {[-10, -6, -2, 2, 6, 10].map((sx, i) => (
+              <path key={i} d={`M ${sx} 12 Q ${sx * 0.5} 35, ${sx * 0.2} 60`}
+                stroke="#5A8A5A" strokeWidth={0.7} fill="none" opacity={0.5} />
+            ))}
+            {/* Ribbon wrapping the bundle */}
+            <path d="M -16 18 Q 0 14, 16 18 L 18 28 Q 0 24, -18 28 Z"
+              fill={wrapAccent} opacity={0.85} />
+            <path d="M -16 18 Q 0 22, 16 18" stroke={wrapColor} strokeWidth={0.6} fill="none" opacity={0.6} />
+            {/* Bow loops */}
+            <path d="M -10 22 Q -22 14, -14 26 Q -8 24, -10 22" fill={wrapAccent} opacity={0.8} />
+            <path d="M 10 22 Q 22 14, 14 26 Q 8 24, 10 22" fill={wrapAccent} opacity={0.8} />
+            <ellipse cx="0" cy="23" rx="2.5" ry="2" fill={wrapAccent} opacity={0.95} />
+            {/* Ribbon tails */}
+            <path d="M -2 25 Q -6 38, -10 50" stroke={wrapAccent} strokeWidth={1.4} fill="none" opacity={0.7} strokeLinecap="round" />
+            <path d="M 2 25 Q 5 36, 8 48" stroke={wrapAccent} strokeWidth={1.4} fill="none" opacity={0.7} strokeLinecap="round" />
+          </>
+        );
+      case "cone":
+        // Classic florist cone wrap — pointed at the bottom, open at the top
+        return (
+          <>
+            {/* Outer cone */}
+            <path d="M -42 10 L 0 70 L 42 10 Q 30 14, 0 16 Q -30 14, -42 10 Z"
+              fill={wrapColor} stroke={wrapAccent} strokeWidth={1} opacity={0.95} />
+            {/* Inner fold (lighter) */}
+            <path d="M -28 12 L 0 60 L 28 12 Q 14 16, 0 17 Q -14 16, -28 12 Z"
+              fill={wrapAccent} opacity={0.18} />
+            {/* Diagonal fold lines */}
+            <path d="M -34 11 L -2 65" stroke={wrapAccent} strokeWidth={0.5} fill="none" opacity={0.3} />
+            <path d="M 34 11 L 2 65" stroke={wrapAccent} strokeWidth={0.5} fill="none" opacity={0.3} />
+            <path d="M -16 13 L -1 68" stroke={wrapAccent} strokeWidth={0.4} fill="none" opacity={0.2} />
+            <path d="M 16 13 L 1 68" stroke={wrapAccent} strokeWidth={0.4} fill="none" opacity={0.2} />
+            {/* Open top scallop */}
+            <path d="M -42 10 Q -30 4, -16 8 Q 0 2, 16 8 Q 30 4, 42 10"
+              fill={wrapColor} stroke={wrapAccent} strokeWidth={0.6} opacity={0.9} />
+            {/* Ribbon at narrow point */}
+            <ellipse cx="0" cy="56" rx="8" ry="2.5" fill={wrapAccent} opacity={0.85} />
+            <path d="M -3 57 Q -5 64, -7 70" stroke={wrapAccent} strokeWidth={1.2} fill="none" opacity={0.6} />
+            <path d="M 3 57 Q 5 64, 7 70" stroke={wrapAccent} strokeWidth={1.2} fill="none" opacity={0.6} />
+          </>
+        );
       case "kraft":
         return (
           <>
