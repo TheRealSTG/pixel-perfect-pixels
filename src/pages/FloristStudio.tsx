@@ -37,24 +37,38 @@ const FloristStudio = () => {
   const [selectedFlower, setSelectedFlower] = useState<string | null>(null);
   const [wrapStyle, setWrapStyle] = useState<WrapStyle>("paper");
   const [stemLength, setStemLength] = useState<number>(1);
+  const [showParity, setShowParity] = useState(false);
   const didDrag = useRef(false);
 
   const addFlower = useCallback((type: FlowerType, color: string, accent: string) => {
     const id = `flower-${++idCounter}`;
     const isGreenery = greeneryTypes.includes(type);
     setFlowers((prev) => {
-      // Spawn near an existing flower (preferring same layer / a focal flower) so
-      // newly added stems land in the bouquet, not somewhere random off-canvas.
+      // "Spawn near nearest existing bloom":
+      // 1. Prefer the currently-selected flower as the anchor (intentional placement).
+      // 2. Otherwise, find the centroid of all blooms, then anchor on the existing
+      //    flower that is closest to that centroid (the densest spot of the bouquet).
+      // 3. If the canvas is empty, use a sensible default for the layer.
       let baseX = 0;
       let baseY = isGreenery ? -25 : -45;
       if (prev.length > 0) {
-        const anchor =
-          prev.find((p) => !greeneryTypes.includes(p.type)) ?? prev[prev.length - 1];
+        let anchor = selectedFlower ? prev.find((p) => p.id === selectedFlower) : undefined;
+        if (!anchor) {
+          const blooms = prev.filter((p) => !greeneryTypes.includes(p.type));
+          const pool = blooms.length > 0 ? blooms : prev;
+          const cx = pool.reduce((s, p) => s + p.x, 0) / pool.length;
+          const cy = pool.reduce((s, p) => s + p.y, 0) / pool.length;
+          anchor = pool.reduce((best, p) => {
+            const d = (p.x - cx) ** 2 + (p.y - cy) ** 2;
+            const bd = (best.x - cx) ** 2 + (best.y - cy) ** 2;
+            return d < bd ? p : best;
+          }, pool[0]);
+        }
         baseX = anchor.x;
         baseY = anchor.y;
       }
-      const x = baseX + (Math.random() - 0.5) * 18;
-      const y = baseY + (Math.random() - 0.5) * 12;
+      const x = baseX + (Math.random() - 0.5) * 16;
+      const y = baseY + (Math.random() - 0.5) * 10;
       return [
         ...prev,
         {
@@ -68,7 +82,7 @@ const FloristStudio = () => {
         },
       ];
     });
-  }, []);
+  }, [selectedFlower]);
 
   const updateFlower = useCallback((id: string, updates: Partial<PlacedFlower>) => {
     setFlowers((prev) => prev.map((f) => f.id === id ? { ...f, ...updates } : f));
