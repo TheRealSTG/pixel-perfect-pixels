@@ -40,7 +40,11 @@ const BouquetCanvas: React.FC<Props> = ({ flowers, wrapColor, wrapAccent, artSty
     return () => timers.forEach(clearTimeout);
   }, [flowers, animated]);
 
-  const styleVariant = artStyle === "pixel" ? "pixel" : artStyle === "botanical" ? "botanical" : "flat";
+  const styleVariant: "flat" | "botanical" | "pixel" =
+    artStyle === "pixel" ? "pixel" : artStyle === "botanical" ? "botanical" : "flat";
+  const isWatercolour = artStyle === "watercolour";
+  const isBotanical = artStyle === "botanical";
+  const isPixel = artStyle === "pixel";
 
   // Sort flowers by layer: back → mid → front
   const layerOrder: Record<string, number> = { back: 0, mid: 1, front: 2 };
@@ -226,7 +230,40 @@ const BouquetCanvas: React.FC<Props> = ({ flowers, wrapColor, wrapAccent, artSty
   };
 
   return (
-    <svg viewBox="-100 -100 200 200" className="w-full h-auto max-w-xs sm:max-w-sm mx-auto" role="img" aria-label="Your bouquet">
+    <svg
+      viewBox="-100 -100 200 200"
+      className="w-full h-auto max-w-xs sm:max-w-sm mx-auto"
+      role="img"
+      aria-label="Your bouquet"
+      shapeRendering={isPixel ? "crispEdges" : "auto"}
+    >
+      <defs>
+        {/* Watercolour: soft turbulent edges + bleed */}
+        <filter id="wc-bleed" x="-20%" y="-20%" width="140%" height="140%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="3" />
+          <feDisplacementMap in="SourceGraphic" scale="1.4" />
+          <feGaussianBlur stdDeviation="0.4" />
+        </filter>
+        {/* Botanical: subtle ink-pen edge darkening */}
+        <filter id="bot-ink" x="-10%" y="-10%" width="120%" height="120%">
+          <feMorphology operator="dilate" radius="0.25" />
+          <feColorMatrix values="0.4 0 0 0 0  0 0.4 0 0 0  0 0 0.4 0 0  0 0 0 1 0" />
+          <feGaussianBlur stdDeviation="0.15" />
+          <feComposite in="SourceGraphic" operator="over" />
+        </filter>
+        {/* Watercolour wash background */}
+        <radialGradient id="wc-wash" cx="50%" cy="55%" r="55%">
+          <stop offset="0%" stopColor="#FFF8F0" stopOpacity="0.0" />
+          <stop offset="70%" stopColor="#F0E0D0" stopOpacity="0.18" />
+          <stop offset="100%" stopColor="#E0C0B0" stopOpacity="0" />
+        </radialGradient>
+      </defs>
+
+      {isWatercolour && (
+        <ellipse cx="0" cy="-20" rx="80" ry="70" fill="url(#wc-wash)" />
+      )}
+
+      <g filter={isWatercolour ? "url(#wc-bleed)" : isBotanical ? "url(#bot-ink)" : undefined}>
       {/* Back layer flowers (behind wrap) */}
       {backLayerFlowers.slice(0, Math.min(backLayerFlowers.length, visibleCount)).map((f, i) => renderFlower(f, i))}
 
@@ -260,6 +297,7 @@ const BouquetCanvas: React.FC<Props> = ({ flowers, wrapColor, wrapAccent, artSty
 
       {/* Mid and front layer flowers (in front of wrap) */}
       {midFrontFlowers.slice(0, Math.max(0, visibleCount - backLayerFlowers.length)).map((f, i) => renderFlower(f, i + backLayerFlowers.length))}
+      </g>
     </svg>
   );
 };

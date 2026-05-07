@@ -274,22 +274,25 @@ export function composeBouquet(
   const flowers: FlowerPlacement[] = [];
   const placed: { x: number; y: number; scale: number }[] = [];
 
-  // Clamp keeps blooms above the wrap top (wrap top ≈ y=10, so y_max=-8).
+  // Clamp keeps blooms inside the bouquet silhouette: above the wrap top
+  // (wrap top ≈ y=10, so y_max=-10) and within the wrap's horizontal width
+  // (wrap mouth ≈ ±42, allow a small bloom overhang to ±48).
   const clamp = (pos: { x: number; y: number }) => ({
-    x: Math.max(-58, Math.min(58, pos.x)),
-    y: Math.max(-82, Math.min(-8, pos.y)),
+    x: Math.max(-48, Math.min(48, pos.x)),
+    y: Math.max(-78, Math.min(-10, pos.y)),
   });
 
   // === BACK LAYER: Greenery — fans wide behind, framing the bouquet ===
   const greenCount = 9 + Math.floor(rand() * 3); // 9-11
   for (let i = 0; i < greenCount; i++) {
     const t = i / (greenCount - 1); // 0→1, left→right
-    const spreadX = (t * 2 - 1) * 55 + (rand() - 0.5) * 8;
+    // Constrained spread so greenery never sticks out beyond the wrap silhouette
+    const spreadX = (t * 2 - 1) * 44 + (rand() - 0.5) * 6;
     const type = palette.greenery[i % palette.greenery.length];
     const natural = pickNatural(rand, type);
     const edgeFactor = Math.abs(t - 0.5) * 2; // 0 center, 1 edge
-    const yPos = -22 - edgeFactor * 38 - rand() * 6;
-    const scale = 1.4 + rand() * 0.5 + edgeFactor * 0.4;
+    const yPos = -22 - edgeFactor * 34 - rand() * 6;
+    const scale = 1.3 + rand() * 0.45 + edgeFactor * 0.3;
     // Rotate outward from center for natural fan
     const rotation = (t - 0.5) * 70 + (rand() - 0.5) * 14;
     const pos = clamp({ x: spreadX, y: yPos });
@@ -353,8 +356,8 @@ export function composeBouquet(
   const fillerCount = 8 + Math.floor(rand() * 3); // 8-10
   for (let i = 0; i < fillerCount; i++) {
     const natural = pickNatural(rand, "babys_breath", undefined, moodTint);
-    const rawX = (rand() - 0.5) * 70;
-    const rawY = -16 - rand() * 45;
+    const rawX = (rand() - 0.5) * 60;
+    const rawY = -18 - rand() * 42;
     const scale = 0.55 + rand() * 0.45;
     const nudged = nudgeAway(rawX, rawY, scale, placed, 8, rand);
     const pos = clamp(nudged);

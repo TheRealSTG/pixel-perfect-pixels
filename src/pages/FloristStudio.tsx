@@ -190,9 +190,11 @@ const FloristStudio = () => {
           <div className="rounded-2xl border border-border bg-card p-3">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-sans font-semibold text-foreground">Studio ↔ Final output parity</span>
-              <span className="text-[10px] font-sans text-muted-foreground">Shared viewBox -100 -100 200 200 · same wrap · same stems</span>
+              <span className="text-[10px] font-sans text-muted-foreground">
+                {wrap.emoji} {wrap.label} · viewBox -100 -100 200 200
+              </span>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-3 gap-3">
               <div>
                 <p className="text-[10px] font-sans text-muted-foreground mb-1 text-center">Studio</p>
                 <div className="aspect-square bg-background rounded-xl overflow-hidden border border-border">
@@ -221,7 +223,40 @@ const FloristStudio = () => {
                   />
                 </div>
               </div>
+              <div>
+                <p className="text-[10px] font-sans text-muted-foreground mb-1 text-center">
+                  Diff <span className="opacity-60">(any colour = mismatch)</span>
+                </p>
+                <div className="aspect-square bg-black rounded-xl overflow-hidden border border-border relative">
+                  {/* Stack both renders with mix-blend-difference. Identical pixels = pure black. */}
+                  <div className="absolute inset-0">
+                    <BouquetCanvas
+                      flowers={flowers.map((f) => ({
+                        type: f.type, x: f.x, y: f.y, scale: f.scale, rotation: f.rotation,
+                        color: f.color, accentColor: f.accentColor, delay: 0, layer: f.layer,
+                      }))}
+                      wrapColor={wrap.color} wrapAccent={wrap.accent}
+                      artStyle={artStyle} animated={false}
+                      wrapStyle={wrapStyle} stemLength={stemLength}
+                    />
+                  </div>
+                  <div className="absolute inset-0 mix-blend-difference">
+                    <BouquetCanvas
+                      flowers={flowers.map((f) => ({
+                        type: f.type, x: f.x, y: f.y, scale: f.scale, rotation: f.rotation,
+                        color: f.color, accentColor: f.accentColor, delay: 0, layer: f.layer,
+                      }))}
+                      wrapColor={wrap.color} wrapAccent={wrap.accent}
+                      artStyle={artStyle} animated={false}
+                      wrapStyle={wrapStyle} stemLength={stemLength}
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
+            <p className="text-[10px] font-sans text-muted-foreground text-center mt-2">
+              ✅ Pure black diff = 1:1 parity. Any visible colour means the two renders disagree.
+            </p>
           </div>
         </div>
       )}
@@ -314,6 +349,11 @@ const FloristStudio = () => {
             <span className="text-[10px] font-sans text-muted-foreground w-10 text-right">{Math.round(stemLength * 100)}%</span>
           </div>
           <div className="bg-card rounded-2xl border border-border flex-1 min-h-[400px] flex items-center justify-center relative overflow-hidden">
+            {/* Active wrap badge — shows shape switching live */}
+            <div className="absolute top-2 left-2 z-10 px-2.5 py-1 rounded-full bg-background/85 backdrop-blur border border-border shadow-sm flex items-center gap-1.5 pointer-events-none">
+              <span className="text-xs">{wrap.emoji}</span>
+              <span className="text-[10px] font-sans font-medium text-foreground">{wrap.label}</span>
+            </div>
             {flowers.length === 0 ? (
               <p className="text-muted-foreground font-sans text-sm">Tap a flower to start 🌸</p>
             ) : (
