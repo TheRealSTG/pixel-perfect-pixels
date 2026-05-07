@@ -349,6 +349,11 @@ const FloristStudio = () => {
             <span className="text-[10px] font-sans text-muted-foreground w-10 text-right">{Math.round(stemLength * 100)}%</span>
           </div>
           <div className="bg-card rounded-2xl border border-border flex-1 min-h-[400px] flex items-center justify-center relative overflow-hidden">
+            {/* Active wrap badge — shows shape switching live */}
+            <div className="absolute top-2 left-2 z-10 px-2.5 py-1 rounded-full bg-background/85 backdrop-blur border border-border shadow-sm flex items-center gap-1.5 pointer-events-none">
+              <span className="text-xs">{wrap.emoji}</span>
+              <span className="text-[10px] font-sans font-medium text-foreground">{wrap.label}</span>
+            </div>
             {flowers.length === 0 ? (
               <p className="text-muted-foreground font-sans text-sm">Tap a flower to start 🌸</p>
             ) : (
