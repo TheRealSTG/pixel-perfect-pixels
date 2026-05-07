@@ -356,8 +356,8 @@ export function composeBouquet(
   const fillerCount = 8 + Math.floor(rand() * 3); // 8-10
   for (let i = 0; i < fillerCount; i++) {
     const natural = pickNatural(rand, "babys_breath", undefined, moodTint);
-    const rawX = (rand() - 0.5) * 70;
-    const rawY = -16 - rand() * 45;
+    const rawX = (rand() - 0.5) * 60;
+    const rawY = -18 - rand() * 42;
     const scale = 0.55 + rand() * 0.45;
     const nudged = nudgeAway(rawX, rawY, scale, placed, 8, rand);
     const pos = clamp(nudged);
