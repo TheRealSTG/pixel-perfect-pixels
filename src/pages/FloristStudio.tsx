@@ -4,6 +4,7 @@ import { flowerComponents, type FlowerType } from "@/components/flowers/FlowerSV
 import { flowerMetadata, colorTheoryTips, bouquetDesignTips } from "@/lib/flower-metadata";
 import { wrapStyles, type WrapStyle, type BouquetLayer } from "@/lib/bouquet-engine";
 import WrapRenderer from "@/components/flowers/WrapRenderer";
+import BouquetCanvas from "@/components/flowers/BouquetCanvas";
 import type { BouquetConfig, ArtStyle } from "@/lib/bouquet-data";
 
 interface PlacedFlower {
@@ -37,24 +38,38 @@ const FloristStudio = () => {
   const [selectedFlower, setSelectedFlower] = useState<string | null>(null);
   const [wrapStyle, setWrapStyle] = useState<WrapStyle>("paper");
   const [stemLength, setStemLength] = useState<number>(1);
+  const [showParity, setShowParity] = useState(false);
   const didDrag = useRef(false);
 
   const addFlower = useCallback((type: FlowerType, color: string, accent: string) => {
     const id = `flower-${++idCounter}`;
     const isGreenery = greeneryTypes.includes(type);
     setFlowers((prev) => {
-      // Spawn near an existing flower (preferring same layer / a focal flower) so
-      // newly added stems land in the bouquet, not somewhere random off-canvas.
+      // "Spawn near nearest existing bloom":
+      // 1. Prefer the currently-selected flower as the anchor (intentional placement).
+      // 2. Otherwise, find the centroid of all blooms, then anchor on the existing
+      //    flower that is closest to that centroid (the densest spot of the bouquet).
+      // 3. If the canvas is empty, use a sensible default for the layer.
       let baseX = 0;
       let baseY = isGreenery ? -25 : -45;
       if (prev.length > 0) {
-        const anchor =
-          prev.find((p) => !greeneryTypes.includes(p.type)) ?? prev[prev.length - 1];
+        let anchor = selectedFlower ? prev.find((p) => p.id === selectedFlower) : undefined;
+        if (!anchor) {
+          const blooms = prev.filter((p) => !greeneryTypes.includes(p.type));
+          const pool = blooms.length > 0 ? blooms : prev;
+          const cx = pool.reduce((s, p) => s + p.x, 0) / pool.length;
+          const cy = pool.reduce((s, p) => s + p.y, 0) / pool.length;
+          anchor = pool.reduce((best, p) => {
+            const d = (p.x - cx) ** 2 + (p.y - cy) ** 2;
+            const bd = (best.x - cx) ** 2 + (best.y - cy) ** 2;
+            return d < bd ? p : best;
+          }, pool[0]);
+        }
         baseX = anchor.x;
         baseY = anchor.y;
       }
-      const x = baseX + (Math.random() - 0.5) * 18;
-      const y = baseY + (Math.random() - 0.5) * 12;
+      const x = baseX + (Math.random() - 0.5) * 16;
+      const y = baseY + (Math.random() - 0.5) * 10;
       return [
         ...prev,
         {
@@ -68,7 +83,7 @@ const FloristStudio = () => {
         },
       ];
     });
-  }, []);
+  }, [selectedFlower]);
 
   const updateFlower = useCallback((id: string, updates: Partial<PlacedFlower>) => {
     setFlowers((prev) => prev.map((f) => f.id === id ? { ...f, ...updates } : f));
@@ -140,6 +155,13 @@ const FloristStudio = () => {
           ← Back
         </button>
         <h1 className="text-xl font-serif font-semibold text-foreground">Pro Florist Studio</h1>
+        <div className="flex items-center gap-3">
+        <button
+          onClick={() => setShowParity((s) => !s)}
+          disabled={flowers.length === 0}
+          className="text-xs font-sans text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40">
+          {showParity ? "Hide parity" : "Parity check"}
+        </button>
         <button
           onClick={() => {
             if (config && flowers.length > 0) {
@@ -160,7 +182,49 @@ const FloristStudio = () => {
           className="text-sm font-sans font-medium text-primary hover:text-accent transition-colors disabled:opacity-40">
           Done →
         </button>
+        </div>
       </nav>
+
+      {showParity && flowers.length > 0 && (
+        <div className="px-4 max-w-7xl mx-auto w-full mb-3 animate-fade-up">
+          <div className="rounded-2xl border border-border bg-card p-3">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-sans font-semibold text-foreground">Studio ↔ Final output parity</span>
+              <span className="text-[10px] font-sans text-muted-foreground">Shared viewBox -100 -100 200 200 · same wrap · same stems</span>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <p className="text-[10px] font-sans text-muted-foreground mb-1 text-center">Studio</p>
+                <div className="aspect-square bg-background rounded-xl overflow-hidden border border-border">
+                  <BouquetCanvas
+                    flowers={flowers.map((f) => ({
+                      type: f.type, x: f.x, y: f.y, scale: f.scale, rotation: f.rotation,
+                      color: f.color, accentColor: f.accentColor, delay: 0, layer: f.layer,
+                    }))}
+                    wrapColor={wrap.color} wrapAccent={wrap.accent}
+                    artStyle={artStyle} animated={false}
+                    wrapStyle={wrapStyle} stemLength={stemLength}
+                  />
+                </div>
+              </div>
+              <div>
+                <p className="text-[10px] font-sans text-muted-foreground mb-1 text-center">Final output</p>
+                <div className="aspect-square bg-background rounded-xl overflow-hidden border border-border">
+                  <BouquetCanvas
+                    flowers={flowers.map((f) => ({
+                      type: f.type, x: f.x, y: f.y, scale: f.scale, rotation: f.rotation,
+                      color: f.color, accentColor: f.accentColor, delay: 0, layer: f.layer,
+                    }))}
+                    wrapColor={wrap.color} wrapAccent={wrap.accent}
+                    artStyle={artStyle} animated={false}
+                    wrapStyle={wrapStyle} stemLength={stemLength}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="flex-1 px-4 pb-6 max-w-7xl mx-auto w-full flex flex-col lg:flex-row gap-4">
         {/* Left sidebar */}
