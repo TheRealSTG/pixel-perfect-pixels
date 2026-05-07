@@ -4,6 +4,7 @@ import { flowerComponents, type FlowerType } from "@/components/flowers/FlowerSV
 import { flowerMetadata, colorTheoryTips, bouquetDesignTips } from "@/lib/flower-metadata";
 import { wrapStyles, type WrapStyle, type BouquetLayer } from "@/lib/bouquet-engine";
 import WrapRenderer from "@/components/flowers/WrapRenderer";
+import BouquetCanvas from "@/components/flowers/BouquetCanvas";
 import type { BouquetConfig, ArtStyle } from "@/lib/bouquet-data";
 
 interface PlacedFlower {
@@ -154,6 +155,13 @@ const FloristStudio = () => {
           ← Back
         </button>
         <h1 className="text-xl font-serif font-semibold text-foreground">Pro Florist Studio</h1>
+        <div className="flex items-center gap-3">
+        <button
+          onClick={() => setShowParity((s) => !s)}
+          disabled={flowers.length === 0}
+          className="text-xs font-sans text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40">
+          {showParity ? "Hide parity" : "Parity check"}
+        </button>
         <button
           onClick={() => {
             if (config && flowers.length > 0) {
@@ -174,7 +182,49 @@ const FloristStudio = () => {
           className="text-sm font-sans font-medium text-primary hover:text-accent transition-colors disabled:opacity-40">
           Done →
         </button>
+        </div>
       </nav>
+
+      {showParity && flowers.length > 0 && (
+        <div className="px-4 max-w-7xl mx-auto w-full mb-3 animate-fade-up">
+          <div className="rounded-2xl border border-border bg-card p-3">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-sans font-semibold text-foreground">Studio ↔ Final output parity</span>
+              <span className="text-[10px] font-sans text-muted-foreground">Shared viewBox -100 -100 200 200 · same wrap · same stems</span>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <p className="text-[10px] font-sans text-muted-foreground mb-1 text-center">Studio</p>
+                <div className="aspect-square bg-background rounded-xl overflow-hidden border border-border">
+                  <BouquetCanvas
+                    flowers={flowers.map((f) => ({
+                      type: f.type, x: f.x, y: f.y, scale: f.scale, rotation: f.rotation,
+                      color: f.color, accentColor: f.accentColor, delay: 0, layer: f.layer,
+                    }))}
+                    wrapColor={wrap.color} wrapAccent={wrap.accent}
+                    artStyle={artStyle} animated={false}
+                    wrapStyle={wrapStyle} stemLength={stemLength}
+                  />
+                </div>
+              </div>
+              <div>
+                <p className="text-[10px] font-sans text-muted-foreground mb-1 text-center">Final output</p>
+                <div className="aspect-square bg-background rounded-xl overflow-hidden border border-border">
+                  <BouquetCanvas
+                    flowers={flowers.map((f) => ({
+                      type: f.type, x: f.x, y: f.y, scale: f.scale, rotation: f.rotation,
+                      color: f.color, accentColor: f.accentColor, delay: 0, layer: f.layer,
+                    }))}
+                    wrapColor={wrap.color} wrapAccent={wrap.accent}
+                    artStyle={artStyle} animated={false}
+                    wrapStyle={wrapStyle} stemLength={stemLength}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="flex-1 px-4 pb-6 max-w-7xl mx-auto w-full flex flex-col lg:flex-row gap-4">
         {/* Left sidebar */}
