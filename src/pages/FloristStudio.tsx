@@ -38,6 +38,8 @@ const FloristStudio = () => {
   const [selectedFlower, setSelectedFlower] = useState<string | null>(null);
   const [wrapStyle, setWrapStyle] = useState<WrapStyle>("paper");
   const [stemLength, setStemLength] = useState<number>(1);
+  const [hideStems, setHideStems] = useState<boolean>(false);
+  const [wrapScale, setWrapScale] = useState<number>(1);
   const [showParity, setShowParity] = useState(false);
   const didDrag = useRef(false);
 
@@ -206,6 +208,7 @@ const FloristStudio = () => {
                     wrapColor={wrap.color} wrapAccent={wrap.accent}
                     artStyle={artStyle} animated={false}
                     wrapStyle={wrapStyle} stemLength={stemLength}
+                    hideStems={hideStems} wrapScale={wrapScale}
                   />
                 </div>
               </div>
@@ -220,6 +223,7 @@ const FloristStudio = () => {
                     wrapColor={wrap.color} wrapAccent={wrap.accent}
                     artStyle={artStyle} animated={false}
                     wrapStyle={wrapStyle} stemLength={stemLength}
+                    hideStems={hideStems} wrapScale={wrapScale}
                   />
                 </div>
               </div>
@@ -238,6 +242,7 @@ const FloristStudio = () => {
                       wrapColor={wrap.color} wrapAccent={wrap.accent}
                       artStyle={artStyle} animated={false}
                       wrapStyle={wrapStyle} stemLength={stemLength}
+                      hideStems={hideStems} wrapScale={wrapScale}
                     />
                   </div>
                   <div className="absolute inset-0 mix-blend-difference">
@@ -249,6 +254,7 @@ const FloristStudio = () => {
                       wrapColor={wrap.color} wrapAccent={wrap.accent}
                       artStyle={artStyle} animated={false}
                       wrapStyle={wrapStyle} stemLength={stemLength}
+                      hideStems={hideStems} wrapScale={wrapScale}
                     />
                   </div>
                 </div>
@@ -338,15 +344,25 @@ const FloristStudio = () => {
         {/* Canvas */}
         <div className="flex-1 flex flex-col">
           {/* Stem length control */}
-          <div className="mb-2 flex items-center gap-3 px-2">
-            <label className="text-[11px] font-sans text-muted-foreground whitespace-nowrap">🌱 Stem length</label>
-            <input
-              type="range" min="50" max="160"
-              value={Math.round(stemLength * 100)}
-              onChange={(e) => setStemLength(Number(e.target.value) / 100)}
-              className="flex-1 h-1.5 accent-primary"
-            />
-            <span className="text-[10px] font-sans text-muted-foreground w-10 text-right">{Math.round(stemLength * 100)}%</span>
+          <div className="mb-2 grid grid-cols-1 sm:grid-cols-3 gap-2 px-2">
+            <div className="flex items-center gap-2">
+              <label className="text-[11px] font-sans text-muted-foreground whitespace-nowrap">🌱 Stem</label>
+              <input type="range" min="0" max="150" value={Math.round(stemLength * 100)} disabled={hideStems}
+                onChange={(e) => setStemLength(Number(e.target.value) / 100)}
+                className="flex-1 h-1.5 accent-primary disabled:opacity-40" />
+              <span className="text-[10px] font-sans text-muted-foreground w-8 text-right">{hideStems ? "—" : `${Math.round(stemLength * 100)}%`}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <label className="text-[11px] font-sans text-muted-foreground whitespace-nowrap">📦 Wrap size</label>
+              <input type="range" min="60" max="140" value={Math.round(wrapScale * 100)}
+                onChange={(e) => setWrapScale(Number(e.target.value) / 100)}
+                className="flex-1 h-1.5 accent-primary" />
+              <span className="text-[10px] font-sans text-muted-foreground w-8 text-right">{Math.round(wrapScale * 100)}%</span>
+            </div>
+            <label className="flex items-center gap-2 text-[11px] font-sans text-foreground">
+              <input type="checkbox" checked={hideStems} onChange={(e) => setHideStems(e.target.checked)} className="accent-primary" />
+              Hide stems behind wrap
+            </label>
           </div>
           <div className="bg-card rounded-2xl border border-border flex-1 min-h-[400px] flex items-center justify-center relative overflow-hidden">
             {/* Active wrap badge — shows shape switching live */}
@@ -377,6 +393,8 @@ const FloristStudio = () => {
                       onPointerDown={(e) => handlePointerDown(e, f.id)}
                       onDoubleClick={() => removeFlower(f.id)}
                       style={{ cursor: dragging === f.id ? "grabbing" : "grab" }}>
+                      {/* Generous transparent hit area for easier tap selection */}
+                      <circle cx={f.x} cy={f.y} r={Math.max(10, 14 * f.scale)} fill="transparent" pointerEvents="all" />
                       <FlowerComp x={f.x} y={f.y} scale={f.scale} rotation={f.rotation}
                         color={f.color} accentColor={f.accentColor} style={styleVariant} />
                       {isSelected && (
@@ -387,26 +405,25 @@ const FloristStudio = () => {
                   );
                 })}
 
-                {/* Stems converging into the wrap (same as result) */}
-                {midFrontFlowers.map((f, i) => {
+                {/* Straight vertical stems (no center convergence) — match BouquetCanvas */}
+                {!hideStems && midFrontFlowers.map((f, i) => {
                   const startY = f.y + 4 * f.scale;
-                  const endY = 22;
-                  const baseLen = endY - startY;
-                  const len = baseLen * stemLength;
-                  const ey = startY + len;
-                  const midX = f.x * (1 - 0.45 * stemLength);
-                  const midY = startY + len * 0.55;
-                  const ex = f.x * (1 - 0.85 * stemLength);
+                  const wrapTopY = 10 * wrapScale;
+                  const maxLen = Math.max(0, wrapTopY + 6 - startY);
+                  const len = Math.max(0, maxLen * stemLength);
+                  if (len < 0.5) return null;
                   return (
-                    <path key={`stem-${f.id}-${i}`}
-                      d={`M ${f.x} ${startY} Q ${midX} ${midY}, ${ex} ${ey}`}
+                    <line key={`stem-${f.id}-${i}`}
+                      x1={f.x} y1={startY} x2={f.x} y2={startY + len}
                       stroke="#5A8A5A" strokeWidth={1 + 0.4 * f.scale}
-                      fill="none" opacity={0.7} strokeLinecap="round" />
+                      opacity={0.7} strokeLinecap="round" />
                   );
                 })}
 
-                {/* Wrap (shared renderer for studio↔result parity) */}
-                <WrapRenderer wrapStyle={wrapStyle} wrapColor={wrap.color} wrapAccent={wrap.accent} />
+                {/* Wrap (shared renderer; scaled around top center 0,10) */}
+                <g transform={`translate(0 ${10 - 10 * wrapScale}) scale(${wrapScale})`}>
+                  <WrapRenderer wrapStyle={wrapStyle} wrapColor={wrap.color} wrapAccent={wrap.accent} />
+                </g>
 
                 {/* Mid + front flowers, in front of wrap */}
                 {midFrontFlowers.map((f) => {
@@ -417,6 +434,7 @@ const FloristStudio = () => {
                       onPointerDown={(e) => handlePointerDown(e, f.id)}
                       onDoubleClick={() => removeFlower(f.id)}
                       style={{ cursor: dragging === f.id ? "grabbing" : "grab" }}>
+                      <circle cx={f.x} cy={f.y} r={Math.max(10, 14 * f.scale)} fill="transparent" pointerEvents="all" />
                       <FlowerComp x={f.x} y={f.y} scale={f.scale} rotation={f.rotation}
                         color={f.color} accentColor={f.accentColor} style={styleVariant} />
                       {isSelected && (

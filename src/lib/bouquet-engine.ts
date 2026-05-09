@@ -252,14 +252,19 @@ export function composeBouquet(
   _artStyle: ArtStyle,
   recipientName: string,
   favouriteColour?: string,
-  city?: string
+  city?: string,
+  options?: { variant?: number; flowerDensity?: number; greeneryDensity?: number }
 ): BouquetComposition {
   const hashStr = (s: string) => s.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
+  const variant = options?.variant ?? 0;
+  const flowerDensity = Math.max(0.3, Math.min(2, options?.flowerDensity ?? 1));
+  const greeneryDensity = Math.max(0.3, Math.min(2, options?.greeneryDensity ?? 1));
   const seed =
     hashStr(recipientName) * 31 +
     hashStr(occasion) * 17 +
     hashStr(mood) * 7 +
     hashStr(city || "") * 3 +
+    variant * 9973 +
     42;
   const rand = seededRandom(seed);
 
@@ -283,7 +288,7 @@ export function composeBouquet(
   });
 
   // === BACK LAYER: Greenery — fans wide behind, framing the bouquet ===
-  const greenCount = 9 + Math.floor(rand() * 3); // 9-11
+  const greenCount = Math.max(3, Math.round((9 + Math.floor(rand() * 3)) * greeneryDensity));
   for (let i = 0; i < greenCount; i++) {
     const t = i / (greenCount - 1); // 0→1, left→right
     // Constrained spread so greenery never sticks out beyond the wrap silhouette
@@ -304,7 +309,7 @@ export function composeBouquet(
   }
 
   // === MID LAYER: Secondary flowers — ring around center ===
-  const secCount = 7 + Math.floor(rand() * 3); // 7-9
+  const secCount = Math.max(2, Math.round((7 + Math.floor(rand() * 3)) * flowerDensity));
   for (let i = 0; i < secCount; i++) {
     const angle = (i / secCount) * Math.PI * 2 + rand() * 0.3;
     const radius = 18 + rand() * 12;
@@ -325,7 +330,7 @@ export function composeBouquet(
   }
 
   // === FRONT LAYER: Focal flowers — large, dominant, triangular ===
-  const focalCount = 4 + Math.floor(rand() * 2); // 4-5
+  const focalCount = Math.max(2, Math.round((4 + Math.floor(rand() * 2)) * flowerDensity));
   const focalPositions = [
     { x: 0, y: -52 },    // crown center
     { x: -20, y: -36 },  // left
@@ -353,7 +358,7 @@ export function composeBouquet(
   }
 
   // === Filler: baby's breath in gaps ===
-  const fillerCount = 8 + Math.floor(rand() * 3); // 8-10
+  const fillerCount = Math.max(2, Math.round((8 + Math.floor(rand() * 3)) * greeneryDensity));
   for (let i = 0; i < fillerCount; i++) {
     const natural = pickNatural(rand, "babys_breath", undefined, moodTint);
     const rawX = (rand() - 0.5) * 60;

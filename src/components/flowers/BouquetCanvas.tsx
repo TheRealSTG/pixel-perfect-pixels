@@ -23,11 +23,15 @@ interface Props {
   artStyle: ArtStyle;
   animated?: boolean;
   wrapStyle?: WrapStyle;
-  /** 0.5 short → 1.5 long. Default 1. */
+  /** 0 hidden → 1.5 long visible stem. Default 1. */
   stemLength?: number;
+  /** Hide stems entirely (overrides stemLength). */
+  hideStems?: boolean;
+  /** 0.6 small → 1.4 large wrap. Default 1. */
+  wrapScale?: number;
 }
 
-const BouquetCanvas: React.FC<Props> = ({ flowers, wrapColor, wrapAccent, artStyle, animated = true, wrapStyle = "paper", stemLength = 1 }) => {
+const BouquetCanvas: React.FC<Props> = ({ flowers, wrapColor, wrapAccent, artStyle, animated = true, wrapStyle = "paper", stemLength = 1, hideStems = false, wrapScale = 1 }) => {
   const [visibleCount, setVisibleCount] = useState(animated ? 0 : flowers.length);
 
   useEffect(() => {
@@ -268,32 +272,31 @@ const BouquetCanvas: React.FC<Props> = ({ flowers, wrapColor, wrapAccent, artSty
       {backLayerFlowers.slice(0, Math.min(backLayerFlowers.length, visibleCount)).map((f, i) => renderFlower(f, i))}
 
       {/* Stems converging into the wrap (rendered behind wrap, in front of back greenery) */}
-      {midFrontFlowers.slice(0, Math.max(0, visibleCount - backLayerFlowers.length)).map((f, i) => {
-        // Stem starts a touch below the bloom and ends inside the wrap top.
+      {!hideStems && midFrontFlowers.slice(0, Math.max(0, visibleCount - backLayerFlowers.length)).map((f, i) => {
+        // Straight vertical stem dropping from the bloom into the wrap top.
+        // No center convergence — stems stay directly under each flower.
         const startY = f.y + 4 * f.scale;
-        const endY = 22; // inside the wrap
-        const baseLen = endY - startY;
-        const len = baseLen * stemLength;
-        const ey = startY + len;
-        // Slight curve toward center based on x
-        const midX = f.x * (1 - 0.45 * stemLength);
-        const midY = startY + len * 0.55;
-        const ex = f.x * (1 - 0.85 * stemLength);
+        const wrapTopY = 10 * wrapScale;
+        const maxLen = Math.max(0, wrapTopY + 6 - startY); // a touch into the wrap
+        const len = Math.max(0, maxLen * stemLength);
+        if (len < 0.5) return null;
         return (
-          <path
+          <line
             key={`stem-${i}`}
-            d={`M ${f.x} ${startY} Q ${midX} ${midY}, ${ex} ${ey}`}
+            x1={f.x} y1={startY}
+            x2={f.x} y2={startY + len}
             stroke="#5A8A5A"
             strokeWidth={1 + 0.4 * f.scale}
-            fill="none"
             opacity={0.7}
             strokeLinecap="round"
           />
         );
       })}
 
-      {/* Wrap */}
-      {renderWrap()}
+      {/* Wrap (scaled around its top-center anchor 0,10) */}
+      <g transform={`translate(0 ${10 - 10 * wrapScale}) scale(${wrapScale})`}>
+        {renderWrap()}
+      </g>
 
       {/* Mid and front layer flowers (in front of wrap) */}
       {midFrontFlowers.slice(0, Math.max(0, visibleCount - backLayerFlowers.length)).map((f, i) => renderFlower(f, i + backLayerFlowers.length))}
