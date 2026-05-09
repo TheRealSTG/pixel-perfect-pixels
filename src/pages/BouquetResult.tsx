@@ -26,6 +26,7 @@ const BouquetResult = () => {
   const [city, setCity] = useState<string>(initialConfig?.recipient.city ?? "");
   const [wrapStyle, setWrapStyle] = useState<WrapStyle>(customWrapStyle ?? "paper");
   const [variant, setVariant] = useState<number>(0);
+  const [variantCount, setVariantCount] = useState<number>(8);
   const [flowerDensity, setFlowerDensity] = useState<number>(1);
   const [greeneryDensity, setGreeneryDensity] = useState<number>(1);
   const [stemLength, setStemLength] = useState<number>(customStemLength ?? 1);
@@ -69,16 +70,16 @@ const BouquetResult = () => {
     return { ...c, wrapStyle, wrapColor: wrap.color, wrapAccent: wrap.accent };
   }, [isPro, customFlowers, occasion, mood, city, config.artStyle, config.recipient.name, config.recipient.favouriteColour, variant, flowerDensity, greeneryDensity, wrapStyle]);
 
-  // Pre-compute 4 layout variants for the picker (guided mode only).
+  // Pre-compute layout variants for the picker (guided mode only).
   const variantThumbs = useMemo(() => {
     if (isPro) return [];
-    return [0, 1, 2, 3].map((v) => ({
+    return Array.from({ length: variantCount }, (_, v) => ({
       v,
       comp: composeBouquet(occasion, mood, config.artStyle, config.recipient.name, config.recipient.favouriteColour, city, {
         variant: v, flowerDensity, greeneryDensity,
       }),
     }));
-  }, [isPro, occasion, mood, city, config.artStyle, config.recipient.name, config.recipient.favouriteColour, flowerDensity, greeneryDensity]);
+  }, [isPro, occasion, mood, city, config.artStyle, config.recipient.name, config.recipient.favouriteColour, flowerDensity, greeneryDensity, variantCount]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -148,8 +149,26 @@ const BouquetResult = () => {
               </div>
 
               <div className="p-4 rounded-2xl bg-card border border-border space-y-3">
-                <h3 className="text-xs font-sans font-semibold text-foreground">🌸 Pick a layout</h3>
-                <div className="grid grid-cols-4 gap-2">
+                <div className="flex items-center justify-between gap-2">
+                  <h3 className="text-xs font-sans font-semibold text-foreground">🌸 Pick a layout</h3>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={() => setVariant(Math.floor(Math.random() * variantCount))}
+                      className="text-[10px] font-sans px-2.5 py-1 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                      title="Pick a random layout"
+                    >
+                      🎲 Shuffle
+                    </button>
+                    <button
+                      onClick={() => setVariantCount((c) => Math.min(c + 4, 24))}
+                      className="text-[10px] font-sans px-2.5 py-1 rounded-full bg-muted hover:bg-muted/70 transition-colors"
+                      title="Generate more variants"
+                    >
+                      + More
+                    </button>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   {variantThumbs.map(({ v, comp }) => (
                     <button key={v} onClick={() => setVariant(v)}
                       className={`rounded-xl overflow-hidden border-2 transition-all ${
@@ -164,7 +183,9 @@ const BouquetResult = () => {
                           stemLength={stemLength} hideStems={hideStems} wrapScale={wrapScale}
                         />
                       </div>
-                      <p className="text-[10px] font-sans py-1 text-center text-muted-foreground">Layout {v + 1}</p>
+                      <p className="text-[11px] font-sans py-1.5 text-center text-muted-foreground">
+                        {variant === v ? "✓ " : ""}Layout {v + 1}
+                      </p>
                     </button>
                   ))}
                 </div>
