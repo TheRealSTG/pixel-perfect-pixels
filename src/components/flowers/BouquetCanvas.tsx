@@ -266,11 +266,17 @@ const BouquetCanvas: React.FC<Props> = ({ flowers, wrapColor, wrapAccent, artSty
 
       {/* Stems converging into the wrap (rendered behind wrap, in front of back greenery) */}
       {!hideStems && midFrontFlowers.slice(0, Math.max(0, visibleCount - backLayerFlowers.length)).map((f, i) => {
-        // Straight vertical stem dropping from the bloom into the wrap top.
-        // No center convergence — stems stay directly under each flower.
+        // Straight vertical stem dropping from the bloom toward the wrap.
+        // Per-wrap "stem hides at" Y so stems never poke through translucent wraps
+        // (vase) but remain naturally visible below the ribbon for hand-tied bunches.
         const startY = f.y + 4 * f.scale;
-        const wrapTopY = 10 * wrapScale;
-        const maxLen = Math.max(0, wrapTopY + 6 - startY); // a touch into the wrap
+        const stemEndByWrap: Record<string, number> = {
+          vase: 7,        // hide just above the glass rim
+          handtied: 60,   // long natural stems below the ribbon
+        };
+        const baseEnd = stemEndByWrap[wrapStyle] ?? 10; // default: tuck into opaque wrap top
+        const wrapEndY = baseEnd * wrapScale;
+        const maxLen = Math.max(0, wrapEndY - startY);
         const len = Math.max(0, maxLen * stemLength);
         if (len < 0.5) return null;
         return (
