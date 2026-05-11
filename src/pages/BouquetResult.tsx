@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { composeBouquet, wrapStyles, type WrapStyle } from "@/lib/bouquet-engine";
 import BouquetCanvas from "@/components/flowers/BouquetCanvas";
@@ -32,6 +32,18 @@ const BouquetResult = () => {
   const [stemLength, setStemLength] = useState<number>(customStemLength ?? 1);
   const [hideStems, setHideStems] = useState<boolean>(false);
   const [wrapScale, setWrapScale] = useState<number>(1);
+
+  // Auto-play shuffle through layout variants.
+  const [autoPlay, setAutoPlay] = useState<boolean>(false);
+  const [autoPlaySpeed, setAutoPlaySpeed] = useState<number>(2000); // ms per variant
+
+  useEffect(() => {
+    if (!autoPlay || isPro) return;
+    const id = window.setInterval(() => {
+      setVariant((v) => (v + 1) % variantCount);
+    }, autoPlaySpeed);
+    return () => window.clearInterval(id);
+  }, [autoPlay, autoPlaySpeed, variantCount, customFlowers]);
 
   if (!initialConfig) {
     return (
