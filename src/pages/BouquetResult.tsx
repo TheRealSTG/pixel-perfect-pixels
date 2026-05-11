@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { composeBouquet, wrapStyles, type WrapStyle } from "@/lib/bouquet-engine";
 import BouquetCanvas from "@/components/flowers/BouquetCanvas";
@@ -32,6 +32,18 @@ const BouquetResult = () => {
   const [stemLength, setStemLength] = useState<number>(customStemLength ?? 1);
   const [hideStems, setHideStems] = useState<boolean>(false);
   const [wrapScale, setWrapScale] = useState<number>(1);
+
+  // Auto-play shuffle through layout variants.
+  const [autoPlay, setAutoPlay] = useState<boolean>(false);
+  const [autoPlaySpeed, setAutoPlaySpeed] = useState<number>(2000); // ms per variant
+
+  useEffect(() => {
+    if (!autoPlay || isPro) return;
+    const id = window.setInterval(() => {
+      setVariant((v) => (v + 1) % variantCount);
+    }, autoPlaySpeed);
+    return () => window.clearInterval(id);
+  }, [autoPlay, autoPlaySpeed, variantCount, customFlowers]);
 
   if (!initialConfig) {
     return (
@@ -82,45 +94,68 @@ const BouquetResult = () => {
   }, [isPro, occasion, mood, city, config.artStyle, config.recipient.name, config.recipient.favouriteColour, flowerDensity, greeneryDensity, variantCount]);
 
   return (
-    <div className="min-h-screen bg-background">
-      <nav className="flex items-center justify-between px-6 py-4 max-w-3xl mx-auto">
-        <button onClick={() => navigate("/create")}
-          className="text-sm font-sans text-muted-foreground hover:text-foreground transition-colors">
-          ← New bouquet
-        </button>
-        <h1 className="text-xl font-serif font-semibold text-foreground">Bouquet</h1>
-        <div className="w-12" />
+    <div className="min-h-screen bg-gradient-to-b from-background via-background to-secondary/20">
+      {/* Decorative top bar */}
+      <nav className="sticky top-0 z-20 backdrop-blur-md bg-background/70 border-b border-border/40">
+        <div className="flex items-center justify-between px-6 py-3 max-w-6xl mx-auto">
+          <button onClick={() => navigate("/create")}
+            className="group flex items-center gap-1.5 text-sm font-sans text-muted-foreground hover:text-foreground transition-colors">
+            <span className="transition-transform group-hover:-translate-x-0.5">←</span>
+            <span>New bouquet</span>
+          </button>
+          <h1 className="text-base font-serif italic text-foreground/80 tracking-wide">Bloom Studio</h1>
+          <button className="px-4 py-1.5 text-xs font-sans rounded-full bg-primary text-primary-foreground hover:opacity-90 transition-opacity">
+            Share 💌
+          </button>
+        </div>
       </nav>
 
-      <main className="max-w-3xl mx-auto px-6 pb-20">
-        <div className="text-center mb-8 animate-fade-up">
-          <p className="text-sm font-sans text-muted-foreground tracking-wide mb-2">A bouquet for</p>
-          <h2 className="text-3xl sm:text-4xl font-serif font-semibold text-foreground">
-            {config.recipient.name}
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 pb-24 pt-8">
+        {/* Hero header */}
+        <header className="text-center mb-10 animate-fade-up">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary/40 border border-border/50 mb-4">
+            <span className="text-xs font-sans text-secondary-foreground tracking-wider uppercase">A bouquet for</span>
+          </div>
+          <h2 className="text-4xl sm:text-5xl font-serif font-medium text-foreground tracking-tight">
+            <span className="text-gradient-rose">{config.recipient.name}</span>
           </h2>
           {config.recipient.relationship && (
-            <p className="text-sm font-sans text-muted-foreground mt-1 italic">
+            <p className="text-sm font-sans text-muted-foreground mt-2 italic">
               Your {config.recipient.relationship}
             </p>
           )}
-        </div>
+        </header>
 
-        <div className="animate-fade-up-delay-1">
-          <BouquetCanvas
-            flowers={composition.flowers}
-            wrapColor={composition.wrapColor}
-            wrapAccent={composition.wrapAccent}
-            artStyle={config.artStyle}
-            animated={true}
-            wrapStyle={composition.wrapStyle}
-            stemLength={stemLength}
-            hideStems={hideStems}
-            wrapScale={wrapScale}
-          />
-        </div>
+        {/* Two-column: canvas + side controls on desktop */}
+        <div className="grid lg:grid-cols-[1.4fr_1fr] gap-6 lg:gap-8 items-start">
+          {/* Canvas card */}
+          <div className="animate-fade-up-delay-1 lg:sticky lg:top-20">
+            <div className="relative rounded-3xl bg-gradient-to-br from-card via-background to-secondary/30 border border-border/60 shadow-xl shadow-primary/5 p-4 sm:p-6 overflow-hidden">
+              {/* corner ornaments */}
+              <div className="absolute -top-12 -right-12 w-40 h-40 rounded-full bg-accent/10 blur-3xl pointer-events-none" />
+              <div className="absolute -bottom-12 -left-12 w-40 h-40 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
+              <BouquetCanvas
+                flowers={composition.flowers}
+                wrapColor={composition.wrapColor}
+                wrapAccent={composition.wrapAccent}
+                artStyle={config.artStyle}
+                animated={true}
+                wrapStyle={composition.wrapStyle}
+                stemLength={stemLength}
+                hideStems={hideStems}
+                wrapScale={wrapScale}
+              />
+              {!isPro && (
+                <div className="mt-3 flex items-center justify-center gap-1.5 text-[11px] font-sans text-muted-foreground">
+                  <span>Layout {variant + 1} of {variantCount}</span>
+                  {autoPlay && <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary"><span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" /> Auto-playing</span>}
+                </div>
+              )}
+            </div>
+          </div>
 
-        {/* Live controls */}
-        <div className="mt-8 space-y-4 animate-fade-up-delay-2">
+          {/* Controls column */}
+          <div className="space-y-4 animate-fade-up-delay-2">
           {!isPro && (
             <>
               <div className="p-4 rounded-2xl bg-card border border-border space-y-3">
@@ -167,6 +202,28 @@ const BouquetResult = () => {
                       + More
                     </button>
                   </div>
+                </div>
+                {/* Auto-play row */}
+                <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-secondary/30 border border-border/50">
+                  <button
+                    onClick={() => setAutoPlay((p) => !p)}
+                    className={`flex items-center gap-1.5 text-[11px] font-sans font-medium px-3 py-1.5 rounded-full transition-all ${
+                      autoPlay ? "bg-primary text-primary-foreground shadow-sm" : "bg-background border border-border hover:border-primary/40"
+                    }`}
+                  >
+                    {autoPlay ? "⏸ Pause" : "▶ Auto-play"}
+                  </button>
+                  <label className="flex-1 flex items-center gap-2">
+                    <span className="text-[10px] font-sans text-muted-foreground whitespace-nowrap">
+                      {(autoPlaySpeed / 1000).toFixed(1)}s
+                    </span>
+                    <input
+                      type="range" min="500" max="5000" step="250"
+                      value={autoPlaySpeed}
+                      onChange={(e) => setAutoPlaySpeed(Number(e.target.value))}
+                      className="flex-1 h-1.5 accent-primary"
+                    />
+                  </label>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   {variantThumbs.map(({ v, comp }) => (
@@ -252,19 +309,22 @@ const BouquetResult = () => {
               </label>
             </div>
           </div>
+          </div>
         </div>
 
-        <div className="mt-10 text-center animate-fade-up-delay-2">
+        {/* Layout picker grid: prefer 4-col on 2-col grids, but only show in lg form here it's already in side panel — keep below for clarity on guided */}
+
+        <div className="mt-12 text-center animate-fade-up-delay-2">
           <p className="text-sm text-muted-foreground font-sans italic mb-6">
-            Made with love, free forever 🌸
+            Crafted with care · Free forever 🌸
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <button onClick={() => navigate("/create")}
-              className="px-8 py-3 bg-primary text-primary-foreground rounded-full font-sans font-medium text-sm hover:opacity-90 transition-opacity shadow-md">
+              className="px-8 py-3 bg-primary text-primary-foreground rounded-full font-sans font-medium text-sm hover:opacity-90 transition-opacity shadow-md hover:shadow-lg">
               Create another
             </button>
-            <button className="px-8 py-3 bg-secondary text-secondary-foreground rounded-full font-sans font-medium text-sm hover:opacity-80 transition-opacity">
-              Share 💌
+            <button className="px-8 py-3 bg-card border border-border text-foreground rounded-full font-sans font-medium text-sm hover:bg-secondary/50 transition-colors">
+              Save to favourites ♥
             </button>
           </div>
         </div>
