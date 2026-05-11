@@ -66,17 +66,10 @@ const BouquetCanvas: React.FC<Props> = ({ flowers, wrapColor, wrapAccent, artSty
     // Wrap sits in the lower portion: top ~y=10, bottom ~y=70
     switch (wrapStyle) {
       case "handtied":
-        // Slim hand-tied bunch: tapered stems gathered with a ribbon, no pot/cone shape
+        // Slim hand-tied bunch: just the ribbon binding — the real stems come from the
+        // shared stem renderer below so the stem-length slider controls them.
         return (
           <>
-            {/* Stem bundle */}
-            <path d="M -14 10 Q -8 30, -4 60 L 4 60 Q 8 30, 14 10 Z"
-              fill="#6B5A3E" opacity={0.55} />
-            {/* Individual stem hints */}
-            {[-10, -6, -2, 2, 6, 10].map((sx, i) => (
-              <path key={i} d={`M ${sx} 12 Q ${sx * 0.5} 35, ${sx * 0.2} 60`}
-                stroke="#5A8A5A" strokeWidth={0.7} fill="none" opacity={0.5} />
-            ))}
             {/* Ribbon wrapping the bundle */}
             <path d="M -16 18 Q 0 14, 16 18 L 18 28 Q 0 24, -18 28 Z"
               fill={wrapAccent} opacity={0.85} />
@@ -273,11 +266,17 @@ const BouquetCanvas: React.FC<Props> = ({ flowers, wrapColor, wrapAccent, artSty
 
       {/* Stems converging into the wrap (rendered behind wrap, in front of back greenery) */}
       {!hideStems && midFrontFlowers.slice(0, Math.max(0, visibleCount - backLayerFlowers.length)).map((f, i) => {
-        // Straight vertical stem dropping from the bloom into the wrap top.
-        // No center convergence — stems stay directly under each flower.
+        // Straight vertical stem dropping from the bloom toward the wrap.
+        // Per-wrap "stem hides at" Y so stems never poke through translucent wraps
+        // (vase) but remain naturally visible below the ribbon for hand-tied bunches.
         const startY = f.y + 4 * f.scale;
-        const wrapTopY = 10 * wrapScale;
-        const maxLen = Math.max(0, wrapTopY + 6 - startY); // a touch into the wrap
+        const stemEndByWrap: Record<string, number> = {
+          vase: 7,        // hide just above the glass rim
+          handtied: 60,   // long natural stems below the ribbon
+        };
+        const baseEnd = stemEndByWrap[wrapStyle] ?? 10; // default: tuck into opaque wrap top
+        const wrapEndY = baseEnd * wrapScale;
+        const maxLen = Math.max(0, wrapEndY - startY);
         const len = Math.max(0, maxLen * stemLength);
         if (len < 0.5) return null;
         return (
