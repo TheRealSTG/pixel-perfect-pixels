@@ -203,6 +203,28 @@ const BouquetResult = () => {
                     </button>
                   </div>
                 </div>
+                {/* Auto-play row */}
+                <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-secondary/30 border border-border/50">
+                  <button
+                    onClick={() => setAutoPlay((p) => !p)}
+                    className={`flex items-center gap-1.5 text-[11px] font-sans font-medium px-3 py-1.5 rounded-full transition-all ${
+                      autoPlay ? "bg-primary text-primary-foreground shadow-sm" : "bg-background border border-border hover:border-primary/40"
+                    }`}
+                  >
+                    {autoPlay ? "⏸ Pause" : "▶ Auto-play"}
+                  </button>
+                  <label className="flex-1 flex items-center gap-2">
+                    <span className="text-[10px] font-sans text-muted-foreground whitespace-nowrap">
+                      {(autoPlaySpeed / 1000).toFixed(1)}s
+                    </span>
+                    <input
+                      type="range" min="500" max="5000" step="250"
+                      value={autoPlaySpeed}
+                      onChange={(e) => setAutoPlaySpeed(Number(e.target.value))}
+                      className="flex-1 h-1.5 accent-primary"
+                    />
+                  </label>
+                </div>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   {variantThumbs.map(({ v, comp }) => (
                     <button key={v} onClick={() => setVariant(v)}
@@ -287,19 +309,22 @@ const BouquetResult = () => {
               </label>
             </div>
           </div>
+          </div>
         </div>
 
-        <div className="mt-10 text-center animate-fade-up-delay-2">
+        {/* Layout picker grid: prefer 4-col on 2-col grids, but only show in lg form here it's already in side panel — keep below for clarity on guided */}
+
+        <div className="mt-12 text-center animate-fade-up-delay-2">
           <p className="text-sm text-muted-foreground font-sans italic mb-6">
-            Made with love, free forever 🌸
+            Crafted with care · Free forever 🌸
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <button onClick={() => navigate("/create")}
-              className="px-8 py-3 bg-primary text-primary-foreground rounded-full font-sans font-medium text-sm hover:opacity-90 transition-opacity shadow-md">
+              className="px-8 py-3 bg-primary text-primary-foreground rounded-full font-sans font-medium text-sm hover:opacity-90 transition-opacity shadow-md hover:shadow-lg">
               Create another
             </button>
-            <button className="px-8 py-3 bg-secondary text-secondary-foreground rounded-full font-sans font-medium text-sm hover:opacity-80 transition-opacity">
-              Share 💌
+            <button className="px-8 py-3 bg-card border border-border text-foreground rounded-full font-sans font-medium text-sm hover:bg-secondary/50 transition-colors">
+              Save to favourites ♥
             </button>
           </div>
         </div>
