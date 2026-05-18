@@ -44,6 +44,25 @@ const BouquetCanvas: React.FC<Props> = ({ flowers, wrapColor, wrapAccent, artSty
     return () => timers.forEach(clearTimeout);
   }, [flowers, animated]);
 
+  // Dev-only validation: exactly one stem instance per stem-eligible flower (no
+  // duplicates) across all wrap styles. Back-layer flowers and hidden stems are
+  // excluded by design.
+  useEffect(() => {
+    if (!import.meta.env.DEV) return;
+    if (hideStems) return;
+    const stemEligible = flowers.filter((f) => (f.layer ?? "mid") !== "back");
+    const seen = new Map<string, number>();
+    stemEligible.forEach((f) => {
+      const k = `${f.type}|${f.x.toFixed(3)}|${f.y.toFixed(3)}`;
+      seen.set(k, (seen.get(k) ?? 0) + 1);
+    });
+    seen.forEach((count, k) => {
+      if (count !== 1) {
+        console.warn(`[BouquetCanvas] expected exactly 1 stem per flower, got ${count} for ${k} (wrap=${wrapStyle})`);
+      }
+    });
+  }, [flowers, wrapStyle, hideStems]);
+
   const styleVariant: "flat" | "botanical" | "pixel" =
     artStyle === "pixel" ? "pixel" : artStyle === "botanical" ? "botanical" : "flat";
   const isWatercolour = artStyle === "watercolour";
@@ -66,10 +85,19 @@ const BouquetCanvas: React.FC<Props> = ({ flowers, wrapColor, wrapAccent, artSty
     // Wrap sits in the lower portion: top ~y=10, bottom ~y=70
     switch (wrapStyle) {
       case "handtied":
-        // Slim hand-tied bunch: just the ribbon binding — the real stems come from the
-        // shared stem renderer below so the stem-length slider controls them.
+        // Slim hand-tied bunch: ribbon binding plus a small decorative stem bundle
+        // below the ribbon. Per-flower stems use the SAME uniform endpoint as every
+        // other wrap (they tuck just inside the wrap top), so the stem-length slider
+        // means the same physical length across every wrap style.
         return (
           <>
+            {/* Decorative stem bundle below the ribbon (static, part of the wrap) */}
+            <g opacity={0.75}>
+              {[-6, -2, 2, 6].map((dx, i) => (
+                <line key={`htstem-${i}`} x1={dx} y1={22} x2={dx * 0.4} y2={58}
+                  stroke="#5A8A5A" strokeWidth={1.2} strokeLinecap="round" />
+              ))}
+            </g>
             {/* Ribbon wrapping the bundle */}
             <path d="M -16 18 Q 0 14, 16 18 L 18 28 Q 0 24, -18 28 Z"
               fill={wrapAccent} opacity={0.85} />
@@ -266,24 +294,28 @@ const BouquetCanvas: React.FC<Props> = ({ flowers, wrapColor, wrapAccent, artSty
 
       {/* Stems converging into the wrap (rendered behind wrap, in front of back greenery) */}
       {!hideStems && midFrontFlowers.slice(0, Math.max(0, visibleCount - backLayerFlowers.length)).map((f, i) => {
-        // Straight vertical stem dropping from the bloom toward the wrap.
-        // Per-wrap "stem hides at" Y so stems never poke through translucent wraps
-        // (vase) but remain naturally visible below the ribbon for hand-tied bunches.
+        // Unified stem endpoint: every wrap style — paper, kraft, tissue, burlap,
+        // vase, hand-tied, cone — terminates stems at the same physical Y so the
+        // stem-length slider always maps to the same physical end-point. y=7 sits
+        // just above the vase rim (the tightest wrap top) so stems never poke
+        // through any translucent wrap. Hand-tied gets its own decorative bundle
+        // baked into the wrap below the ribbon.
         const startY = f.y + 4 * f.scale;
-        const stemEndByWrap: Record<string, number> = {
-          vase: 7,        // hide just above the glass rim
-          handtied: 60,   // long natural stems below the ribbon
-        };
-        const baseEnd = stemEndByWrap[wrapStyle] ?? 10; // default: tuck into opaque wrap top
-        const wrapEndY = baseEnd * wrapScale;
+        const UNIFIED_END_Y = 7;
+        const wrapEndY = UNIFIED_END_Y * wrapScale;
         const maxLen = Math.max(0, wrapEndY - startY);
         const len = Math.max(0, maxLen * stemLength);
         if (len < 0.5) return null;
+        // Regression invariant: stem must never end above the wrap top (smaller Y).
+        const endY = startY + len;
+        if (import.meta.env.DEV && endY < wrapEndY - 0.01) {
+          console.warn(`[BouquetCanvas] stem #${i} ends at y=${endY.toFixed(2)} above wrap top y=${wrapEndY.toFixed(2)} for wrap "${wrapStyle}"`);
+        }
         return (
           <line
-            key={`stem-${i}`}
+            key={`stem-${f.type}-${f.x}-${f.y}-${i}`}
             x1={f.x} y1={startY}
-            x2={f.x} y2={startY + len}
+            x2={f.x} y2={endY}
             stroke="#5A8A5A"
             strokeWidth={1 + 0.4 * f.scale}
             opacity={0.7}
