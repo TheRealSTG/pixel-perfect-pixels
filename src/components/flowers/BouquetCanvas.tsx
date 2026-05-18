@@ -44,6 +44,25 @@ const BouquetCanvas: React.FC<Props> = ({ flowers, wrapColor, wrapAccent, artSty
     return () => timers.forEach(clearTimeout);
   }, [flowers, animated]);
 
+  // Dev-only validation: exactly one stem instance per stem-eligible flower (no
+  // duplicates) across all wrap styles. Back-layer flowers and hidden stems are
+  // excluded by design.
+  useEffect(() => {
+    if (!import.meta.env.DEV) return;
+    if (hideStems) return;
+    const stemEligible = flowers.filter((f) => (f.layer ?? "mid") !== "back");
+    const seen = new Map<string, number>();
+    stemEligible.forEach((f) => {
+      const k = `${f.type}|${f.x.toFixed(3)}|${f.y.toFixed(3)}`;
+      seen.set(k, (seen.get(k) ?? 0) + 1);
+    });
+    seen.forEach((count, k) => {
+      if (count !== 1) {
+        console.warn(`[BouquetCanvas] expected exactly 1 stem per flower, got ${count} for ${k} (wrap=${wrapStyle})`);
+      }
+    });
+  }, [flowers, wrapStyle, hideStems]);
+
   const styleVariant: "flat" | "botanical" | "pixel" =
     artStyle === "pixel" ? "pixel" : artStyle === "botanical" ? "botanical" : "flat";
   const isWatercolour = artStyle === "watercolour";
