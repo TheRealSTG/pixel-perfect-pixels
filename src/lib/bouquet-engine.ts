@@ -310,28 +310,31 @@ export function composeBouquet(
   const flowers: FlowerPlacement[] = [];
   const placed: { x: number; y: number; scale: number }[] = [];
 
-  // Clamp keeps blooms inside the bouquet silhouette: above the wrap top
-  // (wrap top ≈ y=10, so y_max=-10) and within the wrap's horizontal width
-  // (wrap mouth ≈ ±42, allow a small bloom overhang to ±48).
-  const clamp = (pos: { x: number; y: number }) => ({
-    x: Math.max(-48, Math.min(48, pos.x)),
-    y: Math.max(-78, Math.min(-10, pos.y)),
-  });
+  // Settle helper: run collision avoidance, clamp into silhouette, repeat once
+  // so the clamp doesn't push a bloom back into a neighbour.
+  const settle = (x: number, y: number, scale: number, minDist: number) => {
+    let p = nudgeAway(x, y, scale, placed, minDist, rand);
+    p = silhouetteClamp(p.x, p.y, scale);
+    p = nudgeAway(p.x, p.y, scale, placed, minDist * 0.85, rand);
+    return silhouetteClamp(p.x, p.y, scale);
+  };
 
   // === BACK LAYER: Greenery — fans wide behind, framing the bouquet ===
   const greenCount = Math.max(3, Math.round((9 + Math.floor(rand() * 3)) * greeneryDensity));
   for (let i = 0; i < greenCount; i++) {
-    const t = i / (greenCount - 1); // 0→1, left→right
-    // Constrained spread so greenery never sticks out beyond the wrap silhouette
-    const spreadX = (t * 2 - 1) * 44 + (rand() - 0.5) * 6;
+    const t = i / Math.max(1, greenCount - 1); // 0→1, left→right
+    const edgeFactor = Math.abs(t - 0.5) * 2;  // 0 center, 1 edge
     const type = palette.greenery[i % palette.greenery.length];
     const natural = pickNatural(rand, type);
-    const edgeFactor = Math.abs(t - 0.5) * 2; // 0 center, 1 edge
-    const yPos = -22 - edgeFactor * 34 - rand() * 6;
-    const scale = 1.3 + rand() * 0.45 + edgeFactor * 0.3;
-    // Rotate outward from center for natural fan
-    const rotation = (t - 0.5) * 70 + (rand() - 0.5) * 14;
-    const pos = clamp({ x: spreadX, y: yPos });
+    // Greenery hugs the silhouette: position halfway between center and edge
+    // (instead of always at the rim) and shrinks toward the edge so leaves
+    // stop poking outside the wrap.
+    const yPos = -26 - edgeFactor * 30 - rand() * 4;
+    const halfW = silhouetteHalfWidth(yPos);
+    const spreadX = (t * 2 - 1) * halfW * 0.78 + (rand() - 0.5) * 4;
+    const scale = (1.25 + rand() * 0.35) * (1 - 0.18 * edgeFactor);
+    const rotation = (t - 0.5) * 55 + (rand() - 0.5) * 10;
+    const pos = silhouetteClamp(spreadX, yPos, scale);
     flowers.push({
       type, x: pos.x, y: pos.y, scale, rotation,
       color: natural.color, accentColor: natural.accent,
@@ -339,68 +342,78 @@ export function composeBouquet(
     });
   }
 
-  // === MID LAYER: Secondary flowers — ring around center ===
+  // === MID LAYER: Secondary flowers — golden-angle spiral around crown ===
   const secCount = Math.max(2, Math.round((7 + Math.floor(rand() * 3)) * flowerDensity));
+  const GOLDEN = Math.PI * (3 - Math.sqrt(5)); // ≈137.5°
+  const spiralAngle0 = rand() * Math.PI * 2;
   for (let i = 0; i < secCount; i++) {
-    const angle = (i / secCount) * Math.PI * 2 + rand() * 0.3;
-    const radius = 18 + rand() * 12;
+    const angle = spiralAngle0 + i * GOLDEN;
+    const radius = 8 + Math.sqrt(i + 1) * 7.5; // tight in center, opens outward
     const rawX = Math.cos(angle) * radius;
-    const rawY = -34 + Math.sin(angle) * radius * 0.55;
-    const scale = 1.15 + rand() * 0.45;
+    const rawY = -38 + Math.sin(angle) * radius * 0.5;
+    const baseScale = 1.1 + rand() * 0.35;
+    // Edge-falloff: smaller scale near the silhouette edge so big blooms
+    // never hang off the side.
+    const halfWHere = silhouetteHalfWidth(rawY);
+    const edgeFactor = Math.min(1, Math.abs(rawX) / halfWHere);
+    const scale = baseScale * (1 - 0.3 * edgeFactor);
     const type = palette.secondary[i % palette.secondary.length];
     const natural = pickNatural(rand, type, favouriteColour, moodTint);
-    const nudged = nudgeAway(rawX, rawY, scale, placed, 13, rand);
-    const pos = clamp(nudged);
+    const pos = settle(rawX, rawY, scale, 16);
     placed.push({ x: pos.x, y: pos.y, scale });
+    // Bias rotation outward from center for a natural radiating fan; cap jitter.
+    const outwardTilt = Math.sign(pos.x) * Math.min(8, Math.abs(pos.x) * 0.25);
     flowers.push({
       type, x: pos.x, y: pos.y, scale,
-      rotation: pos.x * 0.15 + (rand() - 0.5) * 12,
+      rotation: outwardTilt + (rand() - 0.5) * 8,
       color: natural.color, accentColor: natural.accent,
       delay: greenCount * 0.03 + i * 0.05, layer: "mid",
     });
   }
 
-  // === FRONT LAYER: Focal flowers — large, dominant, triangular ===
-  const focalCount = Math.max(2, Math.round((4 + Math.floor(rand() * 2)) * flowerDensity));
+  // === FRONT LAYER: Focal flowers — strict triangular dome ===
+  // 3 anchors form the dome; optional 4th tucks into the crown.
+  const focalCount = Math.max(3, Math.min(5, Math.round((3 + (rand() < 0.5 ? 0 : 1)) * flowerDensity)));
+  const variantJitter = ((variant % 7) - 3) * 0.6; // deterministic per-variant offset
   const focalPositions = [
-    { x: 0, y: -52 },    // crown center
-    { x: -20, y: -36 },  // left
-    { x: 20, y: -38 },   // right
-    { x: -8, y: -28 },   // fill front-left
-    { x: 10, y: -44 },   // fill upper-right
-    { x: -2, y: -62 },   // top
+    { x: 0 + variantJitter, y: -56 },           // crown apex
+    { x: -22 - variantJitter * 0.5, y: -38 },   // lower-left
+    { x: 22 + variantJitter * 0.5, y: -40 },    // lower-right
+    { x: -6 + variantJitter * 0.4, y: -46 },    // upper-left tuck
+    { x: 8 - variantJitter * 0.4, y: -50 },     // upper-right tuck
   ];
   for (let i = 0; i < focalCount; i++) {
-    const base = focalPositions[i % focalPositions.length];
+    const base = focalPositions[i];
     const type = palette.focal[i % palette.focal.length];
     const natural = pickNatural(rand, type, favouriteColour, moodTint);
-    const scale = 1.7 + rand() * 0.5;
-    const rawX = base.x + (rand() - 0.5) * 5;
-    const rawY = base.y + (rand() - 0.5) * 4;
-    const nudged = nudgeAway(rawX, rawY, scale, placed, 18, rand);
-    const pos = clamp(nudged);
+    const baseScale = 1.7 + rand() * 0.35;
+    // Center-largest, edges-smaller scale curve.
+    const edgeFactor = Math.min(1, Math.abs(base.x) / silhouetteHalfWidth(base.y));
+    const scale = baseScale * (1 - 0.22 * edgeFactor);
+    const pos = settle(base.x, base.y, scale, 22);
     placed.push({ x: pos.x, y: pos.y, scale });
+    const outwardTilt = Math.sign(pos.x) * Math.min(6, Math.abs(pos.x) * 0.18);
     flowers.push({
       type, x: pos.x, y: pos.y, scale,
-      rotation: pos.x * 0.08 + (rand() - 0.5) * 6,
+      rotation: outwardTilt + (rand() - 0.5) * 5,
       color: natural.color, accentColor: natural.accent,
       delay: (greenCount + secCount) * 0.03 + i * 0.08, layer: "front",
     });
   }
 
-  // === Filler: baby's breath in gaps ===
+  // === Filler: baby's breath in gaps — silhouette-aware ===
   const fillerCount = Math.max(2, Math.round((8 + Math.floor(rand() * 3)) * greeneryDensity));
   for (let i = 0; i < fillerCount; i++) {
     const natural = pickNatural(rand, "babys_breath", undefined, moodTint);
-    const rawX = (rand() - 0.5) * 60;
-    const rawY = -18 - rand() * 42;
-    const scale = 0.55 + rand() * 0.45;
-    const nudged = nudgeAway(rawX, rawY, scale, placed, 8, rand);
-    const pos = clamp(nudged);
+    const rawY = -18 - rand() * 50;
+    const halfWHere = silhouetteHalfWidth(rawY);
+    const rawX = (rand() - 0.5) * 2 * halfWHere * 0.9;
+    const scale = 0.55 + rand() * 0.4;
+    const pos = settle(rawX, rawY, scale, 8);
     flowers.push({
       type: "babys_breath",
       x: pos.x, y: pos.y, scale,
-      rotation: (rand() - 0.5) * 35,
+      rotation: (rand() - 0.5) * 30,
       color: natural.color, accentColor: natural.accent,
       delay: (greenCount + secCount + focalCount) * 0.03 + i * 0.04,
       layer: "mid",
