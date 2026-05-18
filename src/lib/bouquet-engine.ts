@@ -210,6 +210,37 @@ function pickNatural(
   return { color, accent };
 }
 
+// ─── Silhouette ─────────────────────────────────────────
+// The bouquet silhouette is a teardrop: narrow at the very top (y≈-78),
+// widest at the crown (y≈-40), and narrowing again toward the wrap mouth
+// (y≈-10). Returns the half-width allowed at a given y.
+function silhouetteHalfWidth(y: number): number {
+  // y range [-78 .. -10]. Normalize to t∈[0..1] where 0=top, 1=mouth.
+  const t = Math.max(0, Math.min(1, (-10 - y) / 68)); // 0 at mouth, 1 at top
+  // Bell-ish profile: widest near t=0.45 (crown), narrower at extremes.
+  // half-width(t) ≈ 46 * sin(π * (0.15 + 0.75*t))  — empirically tuned:
+  //   t=0.00 (mouth): ~38
+  //   t=0.45 (crown): ~46
+  //   t=1.00 (top):   ~28
+  if (t <= 0.45) {
+    // mouth → crown
+    const k = t / 0.45;
+    return 38 + (46 - 38) * k;
+  }
+  const k = (t - 0.45) / 0.55;
+  return 46 - (46 - 28) * k;
+}
+
+// Scale-aware clamp into the silhouette. `bloomRadius` is how far the painted
+// petals extend from center; we inset by it so the visible bloom stays inside.
+function silhouetteClamp(x: number, y: number, scale: number): { x: number; y: number } {
+  const yClamped = Math.max(-78, Math.min(-10, y));
+  const bloomRadius = 6 * scale;
+  const halfW = Math.max(4, silhouetteHalfWidth(yClamped) - bloomRadius);
+  const xClamped = Math.max(-halfW, Math.min(halfW, x));
+  return { x: xClamped, y: yClamped };
+}
+
 // ─── Collision-aware placement ──────────────────────────
 // Returns adjusted position ensuring flowers don't fully overlap.
 // minDist is scaled by the average of both flowers' scales.
