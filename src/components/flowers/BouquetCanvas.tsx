@@ -275,24 +275,28 @@ const BouquetCanvas: React.FC<Props> = ({ flowers, wrapColor, wrapAccent, artSty
 
       {/* Stems converging into the wrap (rendered behind wrap, in front of back greenery) */}
       {!hideStems && midFrontFlowers.slice(0, Math.max(0, visibleCount - backLayerFlowers.length)).map((f, i) => {
-        // Straight vertical stem dropping from the bloom toward the wrap.
-        // Per-wrap "stem hides at" Y so stems never poke through translucent wraps
-        // (vase) but remain naturally visible below the ribbon for hand-tied bunches.
+        // Unified stem endpoint: every wrap style — paper, kraft, tissue, burlap,
+        // vase, hand-tied, cone — terminates stems at the same physical Y so the
+        // stem-length slider always maps to the same physical end-point. y=7 sits
+        // just above the vase rim (the tightest wrap top) so stems never poke
+        // through any translucent wrap. Hand-tied gets its own decorative bundle
+        // baked into the wrap below the ribbon.
         const startY = f.y + 4 * f.scale;
-        const stemEndByWrap: Record<string, number> = {
-          vase: 7,        // hide just above the glass rim
-          handtied: 60,   // long natural stems below the ribbon
-        };
-        const baseEnd = stemEndByWrap[wrapStyle] ?? 10; // default: tuck into opaque wrap top
-        const wrapEndY = baseEnd * wrapScale;
+        const UNIFIED_END_Y = 7;
+        const wrapEndY = UNIFIED_END_Y * wrapScale;
         const maxLen = Math.max(0, wrapEndY - startY);
         const len = Math.max(0, maxLen * stemLength);
         if (len < 0.5) return null;
+        // Regression invariant: stem must never end above the wrap top (smaller Y).
+        const endY = startY + len;
+        if (import.meta.env.DEV && endY < wrapEndY - 0.01) {
+          console.warn(`[BouquetCanvas] stem #${i} ends at y=${endY.toFixed(2)} above wrap top y=${wrapEndY.toFixed(2)} for wrap "${wrapStyle}"`);
+        }
         return (
           <line
-            key={`stem-${i}`}
+            key={`stem-${f.type}-${f.x}-${f.y}-${i}`}
             x1={f.x} y1={startY}
-            x2={f.x} y2={startY + len}
+            x2={f.x} y2={endY}
             stroke="#5A8A5A"
             strokeWidth={1 + 0.4 * f.scale}
             opacity={0.7}
