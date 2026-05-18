@@ -319,7 +319,7 @@ const BouquetCanvas: React.FC<Props> = ({ flowers, wrapColor, wrapAccent, artSty
           </feComponentTransfer>
         </filter>
 
-        {/* Watercolour wash background */}
+        {/* Watercolour soft wash background */}
         <radialGradient id="wc-wash" cx="50%" cy="55%" r="55%">
           <stop offset="0%" stopColor="#FFF8F0" stopOpacity="0.0" />
           <stop offset="70%" stopColor="#F0E0D0" stopOpacity="0.22" />
@@ -331,8 +331,6 @@ const BouquetCanvas: React.FC<Props> = ({ flowers, wrapColor, wrapAccent, artSty
         <ellipse cx="0" cy="-20" rx="80" ry="70" fill="url(#wc-wash)" />
       )}
 
-      {/* Pick the master filter for the active style */}
-      {(() => null)()}
       <g
         filter={
           isWatercolour ? "url(#wc-bleed)" :
@@ -342,29 +340,22 @@ const BouquetCanvas: React.FC<Props> = ({ flowers, wrapColor, wrapAccent, artSty
           undefined
         }
       >
-        {/* Watercolour under-wash: render the flower group again, very blurred
-            and faded, beneath the main group for the layered painted feel. */}
-        {isWatercolour && (
-          <g filter="url(#wc-wash-blur)" opacity={0.45}>
-            {backLayerFlowers.slice(0, Math.min(backLayerFlowers.length, visibleCount)).map((f, i) => renderFlower(f, i))}
-            {midFrontFlowers.slice(0, Math.max(0, visibleCount - backLayerFlowers.length)).map((f, i) => renderFlower(f, i + backLayerFlowers.length))}
-          </g>
-        )}
+      {/* Watercolour under-wash: render the flower group again, very blurred
+          and faded, beneath the main group for the layered painted feel. */}
+      {isWatercolour && (
+        <g filter="url(#wc-wash-blur)" opacity={0.45}>
+          {backLayerFlowers.slice(0, Math.min(backLayerFlowers.length, visibleCount)).map((f, i) => renderFlower(f, i))}
+          {midFrontFlowers.slice(0, Math.max(0, visibleCount - backLayerFlowers.length)).map((f, i) => renderFlower(f, i + backLayerFlowers.length))}
+        </g>
+      )}
 
-        {/* Back layer flowers (behind wrap) */}
-        {backLayerFlowers.slice(0, Math.min(backLayerFlowers.length, visibleCount)).map((f, i) => renderFlower(f, i))}
+      {/* Back layer flowers (behind wrap) */}
+      {backLayerFlowers.slice(0, Math.min(backLayerFlowers.length, visibleCount)).map((f, i) => renderFlower(f, i))}
 
-        {/* Botanical hatching overlay sits over the back greenery */}
-        {isBotanical && (
-          <ellipse cx="0" cy="-40" rx="50" ry="40" fill="url(#bot-hatch)" opacity={0.35} pointerEvents="none" />
-        )}
-      </g>
-        {/* Watercolour wash background */}
-        <radialGradient id="wc-wash" cx="50%" cy="55%" r="55%">
-          <stop offset="0%" stopColor="#FFF8F0" stopOpacity="0.0" />
-          <stop offset="70%" stopColor="#F0E0D0" stopOpacity="0.18" />
-          <stop offset="100%" stopColor="#E0C0B0" stopOpacity="0" />
-        </radialGradient>
+      {/* Botanical hatching overlay sits over the back greenery */}
+      {isBotanical && (
+        <ellipse cx="0" cy="-40" rx="50" ry="40" fill="url(#bot-hatch)" opacity={0.35} pointerEvents="none" />
+      )}
 
       {/* Stems converging into the wrap (rendered behind wrap, in front of back greenery) */}
       {!hideStems && midFrontFlowers.slice(0, Math.max(0, visibleCount - backLayerFlowers.length)).map((f, i) => {
