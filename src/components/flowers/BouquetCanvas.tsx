@@ -66,10 +66,19 @@ const BouquetCanvas: React.FC<Props> = ({ flowers, wrapColor, wrapAccent, artSty
     // Wrap sits in the lower portion: top ~y=10, bottom ~y=70
     switch (wrapStyle) {
       case "handtied":
-        // Slim hand-tied bunch: just the ribbon binding — the real stems come from the
-        // shared stem renderer below so the stem-length slider controls them.
+        // Slim hand-tied bunch: ribbon binding plus a small decorative stem bundle
+        // below the ribbon. Per-flower stems use the SAME uniform endpoint as every
+        // other wrap (they tuck just inside the wrap top), so the stem-length slider
+        // means the same physical length across every wrap style.
         return (
           <>
+            {/* Decorative stem bundle below the ribbon (static, part of the wrap) */}
+            <g opacity={0.75}>
+              {[-6, -2, 2, 6].map((dx, i) => (
+                <line key={`htstem-${i}`} x1={dx} y1={22} x2={dx * 0.4} y2={58}
+                  stroke="#5A8A5A" strokeWidth={1.2} strokeLinecap="round" />
+              ))}
+            </g>
             {/* Ribbon wrapping the bundle */}
             <path d="M -16 18 Q 0 14, 16 18 L 18 28 Q 0 24, -18 28 Z"
               fill={wrapAccent} opacity={0.85} />
