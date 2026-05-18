@@ -405,15 +405,18 @@ const FloristStudio = () => {
                   );
                 })}
 
-                {/* Straight vertical stems (no center convergence) — match BouquetCanvas */}
+                {/* Straight vertical stems — uniform endpoint across every wrap
+                    style so the stem-length slider maps to the same physical
+                    length here as in BouquetCanvas. y=7 sits just above the
+                    vase rim so stems never poke through any wrap. */}
                 {!hideStems && midFrontFlowers.map((f, i) => {
                   const startY = f.y + 4 * f.scale;
-                  const wrapTopY = 10 * wrapScale;
-                  const maxLen = Math.max(0, wrapTopY + 6 - startY);
+                  const wrapEndY = 7 * wrapScale;
+                  const maxLen = Math.max(0, wrapEndY - startY);
                   const len = Math.max(0, maxLen * stemLength);
                   if (len < 0.5) return null;
                   return (
-                    <line key={`stem-${f.id}-${i}`}
+                    <line key={`stem-${f.id}`}
                       x1={f.x} y1={startY} x2={f.x} y2={startY + len}
                       stroke="#5A8A5A" strokeWidth={1 + 0.4 * f.scale}
                       opacity={0.7} strokeLinecap="round" />
