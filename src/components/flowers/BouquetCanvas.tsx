@@ -68,6 +68,7 @@ const BouquetCanvas: React.FC<Props> = ({ flowers, wrapColor, wrapAccent, artSty
   const isWatercolour = artStyle === "watercolour";
   const isBotanical = artStyle === "botanical";
   const isPixel = artStyle === "pixel";
+  const isFlat = artStyle === "flat";
 
   // Sort flowers by layer: back → mid → front
   const layerOrder: Record<string, number> = { back: 0, mid: 1, front: 2 };
@@ -263,23 +264,65 @@ const BouquetCanvas: React.FC<Props> = ({ flowers, wrapColor, wrapAccent, artSty
       shapeRendering={isPixel ? "crispEdges" : "auto"}
     >
       <defs>
-        {/* Watercolour: soft turbulent edges + bleed */}
+        {/* === Watercolour: heavy bleed + soft blur for a true wash look === */}
         <filter id="wc-bleed" x="-20%" y="-20%" width="140%" height="140%">
-          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="3" />
-          <feDisplacementMap in="SourceGraphic" scale="1.4" />
-          <feGaussianBlur stdDeviation="0.4" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.55" numOctaves="2" seed="4" result="noise" />
+          <feDisplacementMap in="SourceGraphic" in2="noise" scale="2.4" />
+          <feGaussianBlur stdDeviation="0.55" />
         </filter>
-        {/* Botanical: subtle ink-pen edge darkening */}
+        {/* Watercolour: even softer wash used for the under-layer */}
+        <filter id="wc-wash-blur" x="-30%" y="-30%" width="160%" height="160%">
+          <feGaussianBlur stdDeviation="2.2" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.35" numOctaves="1" seed="7" result="n" />
+          <feDisplacementMap in="SourceGraphic" in2="n" scale="3" />
+        </filter>
+        {/* Watercolour paper grain overlay */}
+        <filter id="wc-paper" x="0%" y="0%" width="100%" height="100%">
+          <feTurbulence type="fractalNoise" baseFrequency="1.4" numOctaves="2" seed="2" />
+          <feColorMatrix values="0 0 0 0 0.95  0 0 0 0 0.92  0 0 0 0 0.88  0 0 0 0.18 0" />
+        </filter>
+
+        {/* === Botanical: desaturate fills, darken edges (ink-pen feel) === */}
         <filter id="bot-ink" x="-10%" y="-10%" width="120%" height="120%">
-          <feMorphology operator="dilate" radius="0.25" />
-          <feColorMatrix values="0.4 0 0 0 0  0 0.4 0 0 0  0 0 0.4 0 0  0 0 0 1 0" />
-          <feGaussianBlur stdDeviation="0.15" />
-          <feComposite in="SourceGraphic" operator="over" />
+          {/* Desaturate to ~40% saturation */}
+          <feColorMatrix type="saturate" values="0.4" result="desat" />
+          {/* Slightly darken */}
+          <feColorMatrix in="desat" values="0.78 0 0 0 0  0 0.82 0 0 0  0 0 0.74 0 0  0 0 0 1 0" result="muted" />
+          {/* Edge outline via morphology */}
+          <feMorphology in="muted" operator="dilate" radius="0.5" result="dilated" />
+          <feColorMatrix in="dilated" values="0.25 0 0 0 0.05  0 0.25 0 0 0.08  0 0 0.25 0 0.05  0 0 0 1 0" result="ink" />
+          <feComposite in="muted" in2="ink" operator="over" />
         </filter>
+        {/* Botanical: diagonal cross-hatch pattern for petal shading */}
+        <pattern id="bot-hatch" patternUnits="userSpaceOnUse" width="3" height="3" patternTransform="rotate(35)">
+          <line x1="0" y1="0" x2="0" y2="3" stroke="#2A2418" strokeWidth="0.25" opacity="0.55" />
+        </pattern>
+
+        {/* === Flat: poster-style — push saturation, kill mid-tones === */}
+        <filter id="flat-poster" x="-5%" y="-5%" width="110%" height="110%">
+          <feColorMatrix type="saturate" values="1.5" />
+          {/* Posterize-like quantization via component transfer */}
+          <feComponentTransfer>
+            <feFuncR type="discrete" tableValues="0.18 0.45 0.7 0.92" />
+            <feFuncG type="discrete" tableValues="0.18 0.45 0.7 0.92" />
+            <feFuncB type="discrete" tableValues="0.18 0.45 0.7 0.92" />
+          </feComponentTransfer>
+        </filter>
+
+        {/* === Pixel: crisp posterize to lock palette to chunky blocks === */}
+        <filter id="pixel-crunch" x="-5%" y="-5%" width="110%" height="110%">
+          <feColorMatrix type="saturate" values="1.2" />
+          <feComponentTransfer>
+            <feFuncR type="discrete" tableValues="0.12 0.4 0.7 1" />
+            <feFuncG type="discrete" tableValues="0.12 0.4 0.7 1" />
+            <feFuncB type="discrete" tableValues="0.12 0.4 0.7 1" />
+          </feComponentTransfer>
+        </filter>
+
         {/* Watercolour wash background */}
         <radialGradient id="wc-wash" cx="50%" cy="55%" r="55%">
           <stop offset="0%" stopColor="#FFF8F0" stopOpacity="0.0" />
-          <stop offset="70%" stopColor="#F0E0D0" stopOpacity="0.18" />
+          <stop offset="70%" stopColor="#F0E0D0" stopOpacity="0.22" />
           <stop offset="100%" stopColor="#E0C0B0" stopOpacity="0" />
         </radialGradient>
       </defs>
@@ -288,9 +331,40 @@ const BouquetCanvas: React.FC<Props> = ({ flowers, wrapColor, wrapAccent, artSty
         <ellipse cx="0" cy="-20" rx="80" ry="70" fill="url(#wc-wash)" />
       )}
 
-      <g filter={isWatercolour ? "url(#wc-bleed)" : isBotanical ? "url(#bot-ink)" : undefined}>
-      {/* Back layer flowers (behind wrap) */}
-      {backLayerFlowers.slice(0, Math.min(backLayerFlowers.length, visibleCount)).map((f, i) => renderFlower(f, i))}
+      {/* Pick the master filter for the active style */}
+      {(() => null)()}
+      <g
+        filter={
+          isWatercolour ? "url(#wc-bleed)" :
+          isBotanical ? "url(#bot-ink)" :
+          isFlat ? "url(#flat-poster)" :
+          isPixel ? "url(#pixel-crunch)" :
+          undefined
+        }
+      >
+        {/* Watercolour under-wash: render the flower group again, very blurred
+            and faded, beneath the main group for the layered painted feel. */}
+        {isWatercolour && (
+          <g filter="url(#wc-wash-blur)" opacity={0.45}>
+            {backLayerFlowers.slice(0, Math.min(backLayerFlowers.length, visibleCount)).map((f, i) => renderFlower(f, i))}
+            {midFrontFlowers.slice(0, Math.max(0, visibleCount - backLayerFlowers.length)).map((f, i) => renderFlower(f, i + backLayerFlowers.length))}
+          </g>
+        )}
+
+        {/* Back layer flowers (behind wrap) */}
+        {backLayerFlowers.slice(0, Math.min(backLayerFlowers.length, visibleCount)).map((f, i) => renderFlower(f, i))}
+
+        {/* Botanical hatching overlay sits over the back greenery */}
+        {isBotanical && (
+          <ellipse cx="0" cy="-40" rx="50" ry="40" fill="url(#bot-hatch)" opacity={0.35} pointerEvents="none" />
+        )}
+      </g>
+        {/* Watercolour wash background */}
+        <radialGradient id="wc-wash" cx="50%" cy="55%" r="55%">
+          <stop offset="0%" stopColor="#FFF8F0" stopOpacity="0.0" />
+          <stop offset="70%" stopColor="#F0E0D0" stopOpacity="0.18" />
+          <stop offset="100%" stopColor="#E0C0B0" stopOpacity="0" />
+        </radialGradient>
 
       {/* Stems converging into the wrap (rendered behind wrap, in front of back greenery) */}
       {!hideStems && midFrontFlowers.slice(0, Math.max(0, visibleCount - backLayerFlowers.length)).map((f, i) => {
