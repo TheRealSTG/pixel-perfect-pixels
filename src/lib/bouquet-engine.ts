@@ -280,7 +280,7 @@ function nudgeAway(
 export function composeBouquet(
   occasion: Occasion,
   mood: Mood,
-  _artStyle: ArtStyle,
+  artStyle: ArtStyle,
   recipientName: string,
   favouriteColour?: string,
   city?: string,
@@ -290,12 +290,21 @@ export function composeBouquet(
   const variant = options?.variant ?? 0;
   const flowerDensity = Math.max(0.3, Math.min(2, options?.flowerDensity ?? 1));
   const greeneryDensity = Math.max(0.3, Math.min(2, options?.greeneryDensity ?? 1));
+  // Deterministic seed: same (recipient, occasion, mood, city, variant,
+  // density sliders) ALWAYS produces the exact same arrangement. ArtStyle is
+  // intentionally NOT in the seed so switching style preserves layout — only
+  // colors/filters change. Slider values are quantized to 2 decimals so a
+  // given tick reproduces identically.
+  const qF = Math.round(flowerDensity * 100);
+  const qG = Math.round(greeneryDensity * 100);
   const seed =
     hashStr(recipientName) * 31 +
     hashStr(occasion) * 17 +
     hashStr(mood) * 7 +
     hashStr(city || "") * 3 +
     variant * 9973 +
+    qF * 131 +
+    qG * 191 +
     42;
   const rand = seededRandom(seed);
 
@@ -421,10 +430,95 @@ export function composeBouquet(
   }
 
   return {
-    flowers,
+    flowers: flowers.map((f) => ({
+      ...f,
+      ...applyStylePalette(f.color, f.accentColor, f.type, artStyle),
+    })),
     wrapColor: wrap.color,
     wrapAccent: wrap.accent,
     backgroundColor: moodInfo.bg,
     wrapStyle,
   };
+}
+
+// ─── Per-style palette transforms ───────────────────────
+// Each art style applies a distinct color transform so the four styles read
+// as genuinely different visual languages, not just different filters.
+function rgbToHsl(hex: string): [number, number, number] {
+  const h = hex.replace("#", "");
+  const r = parseInt(h.substring(0, 2), 16) / 255;
+  const g = parseInt(h.substring(2, 4), 16) / 255;
+  const b = parseInt(h.substring(4, 6), 16) / 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  const l = (max + min) / 2;
+  let s = 0, hh = 0;
+  if (max !== min) {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    if (max === r) hh = ((g - b) / d + (g < b ? 6 : 0));
+    else if (max === g) hh = ((b - r) / d + 2);
+    else hh = ((r - g) / d + 4);
+    hh *= 60;
+  }
+  return [hh, s, l];
+}
+function hslToHex(h: number, s: number, l: number): string {
+  s = Math.max(0, Math.min(1, s));
+  l = Math.max(0, Math.min(1, l));
+  const c = (1 - Math.abs(2 * l - 1)) * s;
+  const hh = ((h % 360) + 360) % 360 / 60;
+  const x = c * (1 - Math.abs((hh % 2) - 1));
+  let r = 0, g = 0, b = 0;
+  if (hh < 1) [r, g, b] = [c, x, 0];
+  else if (hh < 2) [r, g, b] = [x, c, 0];
+  else if (hh < 3) [r, g, b] = [0, c, x];
+  else if (hh < 4) [r, g, b] = [0, x, c];
+  else if (hh < 5) [r, g, b] = [x, 0, c];
+  else [r, g, b] = [c, 0, x];
+  const m = l - c / 2;
+  const to = (v: number) => Math.round((v + m) * 255).toString(16).padStart(2, "0");
+  return `#${to(r)}${to(g)}${to(b)}`;
+}
+function quantize(v: number, steps: number) {
+  return Math.round(v * steps) / steps;
+}
+
+function applyStylePalette(
+  color: string,
+  accent: string,
+  _type: FlowerType,
+  style: ArtStyle
+): { color: string; accentColor: string } {
+  const [h, s, l] = rgbToHsl(color);
+  const [ah, as, al] = rgbToHsl(accent);
+  switch (style) {
+    case "flat": {
+      // Bold poster colors: saturation boosted, lightness pushed to mid.
+      const c = hslToHex(h, Math.min(1, s * 1.35 + 0.1), Math.max(0.42, Math.min(0.62, l)));
+      const a = hslToHex(ah, Math.min(1, as * 1.25 + 0.1), Math.max(0.3, Math.min(0.5, al)));
+      return { color: c, accentColor: a };
+    }
+    case "botanical": {
+      // Vintage botanical print: desaturated, slightly warm, darker accents.
+      const c = hslToHex(h + 8, s * 0.45, Math.max(0.4, l * 0.92));
+      const a = hslToHex(ah + 5, as * 0.5, Math.max(0.22, al * 0.7));
+      return { color: c, accentColor: a };
+    }
+    case "pixel": {
+      // Lock to a chunky 8-bit palette: hue snapped to 30° steps,
+      // saturation/lightness quantized to 4 tiers.
+      const ph = Math.round(h / 30) * 30;
+      const c = hslToHex(ph, quantize(Math.min(1, s * 1.2), 4), quantize(l, 4));
+      const a = hslToHex(ph, quantize(Math.min(1, as * 1.2), 4), quantize(Math.max(0.2, al - 0.1), 4));
+      return { color: c, accentColor: a };
+    }
+    case "watercolour": {
+      // Soft pastel washes: high lightness, low-mid saturation, hue unchanged.
+      const c = hslToHex(h, Math.min(0.55, s * 0.7), Math.min(0.88, l + 0.18));
+      const a = hslToHex(ah, Math.min(0.5, as * 0.65), Math.min(0.78, al + 0.12));
+      return { color: c, accentColor: a };
+    }
+    default:
+      return { color, accentColor: accent };
+  }
 }
