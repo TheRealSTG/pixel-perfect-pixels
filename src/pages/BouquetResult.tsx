@@ -29,9 +29,9 @@ const BouquetResult = () => {
   const [variantCount, setVariantCount] = useState<number>(8);
   const [flowerDensity, setFlowerDensity] = useState<number>(1);
   const [greeneryDensity, setGreeneryDensity] = useState<number>(1);
-  const [stemLength, setStemLength] = useState<number>(customStemLength ?? 1);
+  const [stemLength, setStemLength] = useState<number>(customStemLength ?? 0.25);
   const [hideStems, setHideStems] = useState<boolean>(false);
-  const [wrapScale, setWrapScale] = useState<number>(1);
+  const [wrapScale, setWrapScale] = useState<number>(1.2);
 
   // Auto-play shuffle through layout variants.
   const [autoPlay, setAutoPlay] = useState<boolean>(false);

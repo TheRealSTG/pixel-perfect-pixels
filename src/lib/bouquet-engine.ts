@@ -78,13 +78,13 @@ const naturalColorRanges: Record<FlowerType, { colors: string[]; accents: string
 
 // ─── Wrap styles ─────────────────────────────────────────
 export const wrapStyles: Record<WrapStyle, { color: string; accent: string; label: string; emoji: string }> = {
-  paper: { color: "#E8DDD0", accent: "#D4C8B8", label: "Craft Paper", emoji: "📜" },
-  kraft: { color: "#C4A882", accent: "#A88A68", label: "Kraft Paper", emoji: "📦" },
-  tissue: { color: "#F0E8F0", accent: "#D4A0C0", label: "Tissue Paper", emoji: "🎀" },
-  burlap: { color: "#B8A080", accent: "#988060", label: "Burlap Wrap", emoji: "🧵" },
-  vase: { color: "#D8E8E8", accent: "#B8D0D0", label: "Glass Vase", emoji: "🏺" },
-  handtied: { color: "#EFE6D8", accent: "#B89878", label: "Hand-Tied", emoji: "🎗️" },
-  cone: { color: "#F4ECE0", accent: "#C8A878", label: "Cone Bouquet", emoji: "🌷" },
+  paper:    { color: "#E8DDD0", accent: "#D4C8B8", label: "Craft Paper", emoji: "📜" },
+  kraft:    { color: "#C4A882", accent: "#A88A68", label: "Kraft Paper", emoji: "📦" },
+  tissue:   { color: "#F0E8F0", accent: "#D4A0C0", label: "Tissue Paper", emoji: "🎀" },
+  burlap:   { color: "#B8A080", accent: "#988060", label: "Burlap Wrap",  emoji: "🧵" },
+  vase:     { color: "#D8E8E8", accent: "#B8D0D0", label: "Glass Vase",   emoji: "🏺" },
+  handtied: { color: "#EFE6D8", accent: "#B89878", label: "Hand-Tied",    emoji: "🎗️" },
+  cone:     { color: "#F4ECE0", accent: "#C8A878", label: "Cone Bouquet", emoji: "🌷" },
 };
 
 // ─── Color utilities ────────────────────────────────────
@@ -106,22 +106,21 @@ const colourNameToHex: Record<string, string> = {
 };
 
 const allowedTints: Record<FlowerType, string[]> = {
-  rose: ["red", "pink", "white", "coral", "peach", "lavender"],
-  peony: ["pink", "white", "peach", "coral"],
-  tulip: ["red", "pink", "yellow", "orange", "purple", "white"],
-  sunflower: ["yellow", "orange"],
-  lavender: ["purple", "lavender"],
-  eucalyptus: ["green"],
-  daisy: ["white", "yellow"],
-  hyacinth: ["purple", "lavender", "pink", "blue"],
-  ranunculus: ["red", "pink", "yellow", "orange", "peach", "coral", "white"],
-  cherry_blossom: ["pink", "white"],
-  babys_breath: ["white"],
-  fern: ["green"],
+  rose:          ["red", "pink", "white", "coral", "peach", "lavender"],
+  peony:         ["pink", "white", "peach", "coral"],
+  tulip:         ["red", "pink", "yellow", "orange", "purple", "white"],
+  sunflower:     ["yellow", "orange"],
+  lavender:      ["purple", "lavender"],
+  eucalyptus:    ["green"],
+  daisy:         ["white", "yellow"],
+  hyacinth:      ["purple", "lavender", "pink", "blue"],
+  ranunculus:    ["red", "pink", "yellow", "orange", "peach", "coral", "white"],
+  cherry_blossom:["pink", "white"],
+  babys_breath:  ["white"],
+  fern:          ["green"],
 };
 
 // ─── Mood palettes ──────────────────────────────────────
-// Mood influences wrap style, background, color tint, and saturation.
 const moodPalettes: Record<string, { wrap: WrapStyle; bg: string; tint?: string; tintAmount: number }> = {
   "thinking-of-you": { wrap: "handtied", bg: "#F4F1EA", tint: "#9B7FBF", tintAmount: 0.12 },
   "proud-of-you":    { wrap: "kraft",    bg: "#FDFAF0", tint: "#F4C430", tintAmount: 0.15 },
@@ -140,36 +139,36 @@ interface OccasionPalette {
 
 const occasionPalettes: Record<string, OccasionPalette[]> = {
   birthday: [
-    { focal: ["rose", "ranunculus"], secondary: ["daisy", "tulip"], greenery: ["eucalyptus", "babys_breath"] },
-    { focal: ["sunflower", "ranunculus"], secondary: ["daisy", "cherry_blossom"], greenery: ["fern", "babys_breath"] },
-    { focal: ["tulip", "peony"], secondary: ["hyacinth", "daisy"], greenery: ["eucalyptus", "fern"] },
+    { focal: ["rose", "ranunculus"],    secondary: ["daisy", "tulip"],           greenery: ["eucalyptus", "babys_breath"] },
+    { focal: ["sunflower", "ranunculus"],secondary: ["daisy", "cherry_blossom"], greenery: ["fern", "babys_breath"] },
+    { focal: ["tulip", "peony"],         secondary: ["hyacinth", "daisy"],       greenery: ["eucalyptus", "fern"] },
   ],
   anniversary: [
-    { focal: ["rose", "peony"], secondary: ["ranunculus", "cherry_blossom"], greenery: ["eucalyptus", "babys_breath"] },
-    { focal: ["peony", "ranunculus"], secondary: ["rose", "lavender"], greenery: ["fern", "babys_breath"] },
+    { focal: ["rose", "peony"],       secondary: ["ranunculus", "cherry_blossom"], greenery: ["eucalyptus", "babys_breath"] },
+    { focal: ["peony", "ranunculus"], secondary: ["rose", "lavender"],             greenery: ["fern", "babys_breath"] },
   ],
   "just-because": [
-    { focal: ["sunflower", "daisy"], secondary: ["lavender", "cherry_blossom"], greenery: ["eucalyptus", "fern"] },
-    { focal: ["cherry_blossom", "ranunculus"], secondary: ["daisy", "babys_breath"], greenery: ["eucalyptus", "fern"] },
+    { focal: ["sunflower", "daisy"],       secondary: ["lavender", "cherry_blossom"], greenery: ["eucalyptus", "fern"] },
+    { focal: ["cherry_blossom", "ranunculus"], secondary: ["daisy", "babys_breath"],  greenery: ["eucalyptus", "fern"] },
   ],
   "thank-you": [
-    { focal: ["tulip", "peony"], secondary: ["daisy", "ranunculus"], greenery: ["eucalyptus", "babys_breath"] },
-    { focal: ["rose", "daisy"], secondary: ["lavender", "cherry_blossom"], greenery: ["fern", "babys_breath"] },
+    { focal: ["tulip", "peony"],  secondary: ["daisy", "ranunculus"],      greenery: ["eucalyptus", "babys_breath"] },
+    { focal: ["rose", "daisy"],   secondary: ["lavender", "cherry_blossom"], greenery: ["fern", "babys_breath"] },
   ],
   "get-well": [
-    { focal: ["sunflower", "daisy"], secondary: ["lavender", "cherry_blossom"], greenery: ["eucalyptus", "fern"] },
-    { focal: ["daisy", "cherry_blossom"], secondary: ["lavender", "ranunculus"], greenery: ["babys_breath", "eucalyptus"] },
+    { focal: ["sunflower", "daisy"],      secondary: ["lavender", "cherry_blossom"],  greenery: ["eucalyptus", "fern"] },
+    { focal: ["daisy", "cherry_blossom"], secondary: ["lavender", "ranunculus"],      greenery: ["babys_breath", "eucalyptus"] },
   ],
   congratulations: [
-    { focal: ["rose", "sunflower"], secondary: ["tulip", "hyacinth"], greenery: ["eucalyptus", "babys_breath"] },
-    { focal: ["peony", "ranunculus"], secondary: ["tulip", "daisy"], greenery: ["fern", "babys_breath"] },
+    { focal: ["rose", "sunflower"],   secondary: ["tulip", "hyacinth"],  greenery: ["eucalyptus", "babys_breath"] },
+    { focal: ["peony", "ranunculus"], secondary: ["tulip", "daisy"],     greenery: ["fern", "babys_breath"] },
   ],
   diwali: [
     { focal: ["rose", "sunflower"], secondary: ["ranunculus", "hyacinth"], greenery: ["eucalyptus", "fern"] },
   ],
   "mothers-day": [
-    { focal: ["peony", "rose"], secondary: ["tulip", "cherry_blossom"], greenery: ["eucalyptus", "babys_breath"] },
-    { focal: ["rose", "ranunculus"], secondary: ["peony", "lavender"], greenery: ["fern", "babys_breath"] },
+    { focal: ["peony", "rose"],      secondary: ["tulip", "cherry_blossom"], greenery: ["eucalyptus", "babys_breath"] },
+    { focal: ["rose", "ranunculus"], secondary: ["peony", "lavender"],       greenery: ["fern", "babys_breath"] },
   ],
 };
 
@@ -201,7 +200,6 @@ function pickNatural(
     }
   }
 
-  // Mood tint applies subtly to non-greenery so the whole bouquet shares a vibe.
   if (moodTint && moodTint.amount > 0 && type !== "eucalyptus" && type !== "fern") {
     color = blendColors(color, moodTint.color, moodTint.amount);
     accent = blendColors(accent, moodTint.color, moodTint.amount * 0.6);
@@ -211,19 +209,9 @@ function pickNatural(
 }
 
 // ─── Silhouette ─────────────────────────────────────────
-// The bouquet silhouette is a teardrop: narrow at the very top (y≈-78),
-// widest at the crown (y≈-40), and narrowing again toward the wrap mouth
-// (y≈-10). Returns the half-width allowed at a given y.
 function silhouetteHalfWidth(y: number): number {
-  // y range [-78 .. -10]. Normalize to t∈[0..1] where 0=top, 1=mouth.
-  const t = Math.max(0, Math.min(1, (-10 - y) / 68)); // 0 at mouth, 1 at top
-  // Bell-ish profile: widest near t=0.45 (crown), narrower at extremes.
-  // half-width(t) ≈ 46 * sin(π * (0.15 + 0.75*t))  — empirically tuned:
-  //   t=0.00 (mouth): ~38
-  //   t=0.45 (crown): ~46
-  //   t=1.00 (top):   ~28
+  const t = Math.max(0, Math.min(1, (-10 - y) / 68));
   if (t <= 0.45) {
-    // mouth → crown
     const k = t / 0.45;
     return 38 + (46 - 38) * k;
   }
@@ -231,8 +219,6 @@ function silhouetteHalfWidth(y: number): number {
   return 46 - (46 - 28) * k;
 }
 
-// Scale-aware clamp into the silhouette. `bloomRadius` is how far the painted
-// petals extend from center; we inset by it so the visible bloom stays inside.
 function silhouetteClamp(x: number, y: number, scale: number): { x: number; y: number } {
   const yClamped = Math.max(-78, Math.min(-10, y));
   const bloomRadius = 6 * scale;
@@ -242,8 +228,6 @@ function silhouetteClamp(x: number, y: number, scale: number): { x: number; y: n
 }
 
 // ─── Collision-aware placement ──────────────────────────
-// Returns adjusted position ensuring flowers don't fully overlap.
-// minDist is scaled by the average of both flowers' scales.
 function nudgeAway(
   x: number, y: number, scale: number,
   placed: { x: number; y: number; scale: number }[],
@@ -262,7 +246,6 @@ function nudgeAway(
         nx += Math.cos(angle) * push;
         ny += Math.sin(angle) * push;
       } else if (dist <= 0.01) {
-        // Flowers at exact same spot — push in random direction
         const angle = rand() * Math.PI * 2;
         nx += Math.cos(angle) * minDist * 0.5;
         ny += Math.sin(angle) * minDist * 0.5;
@@ -273,10 +256,6 @@ function nudgeAway(
 }
 
 // ─── Compose bouquet ────────────────────────────────────
-// The canvas viewBox centers on 0,0. Wrap top is at y≈10.
-// Flowers sit above the wrap (negative y) with stems going down into the wrap.
-// A flower at y=-10 has its bloom at y=-10 and stem reaching into the wrap.
-
 export function composeBouquet(
   occasion: Occasion,
   mood: Mood,
@@ -290,11 +269,6 @@ export function composeBouquet(
   const variant = options?.variant ?? 0;
   const flowerDensity = Math.max(0.3, Math.min(2, options?.flowerDensity ?? 1));
   const greeneryDensity = Math.max(0.3, Math.min(2, options?.greeneryDensity ?? 1));
-  // Deterministic seed: same (recipient, occasion, mood, city, variant,
-  // density sliders) ALWAYS produces the exact same arrangement. ArtStyle is
-  // intentionally NOT in the seed so switching style preserves layout — only
-  // colors/filters change. Slider values are quantized to 2 decimals so a
-  // given tick reproduces identically.
   const qF = Math.round(flowerDensity * 100);
   const qG = Math.round(greeneryDensity * 100);
   const seed =
@@ -319,8 +293,6 @@ export function composeBouquet(
   const flowers: FlowerPlacement[] = [];
   const placed: { x: number; y: number; scale: number }[] = [];
 
-  // Settle helper: run collision avoidance, clamp into silhouette, repeat once
-  // so the clamp doesn't push a bloom back into a neighbour.
   const settle = (x: number, y: number, scale: number, minDist: number) => {
     let p = nudgeAway(x, y, scale, placed, minDist, rand);
     p = silhouetteClamp(p.x, p.y, scale);
@@ -328,20 +300,18 @@ export function composeBouquet(
     return silhouetteClamp(p.x, p.y, scale);
   };
 
-  // === BACK LAYER: Greenery — fans wide behind, framing the bouquet ===
+  // === BACK LAYER: Greenery ===
   const greenCount = Math.max(3, Math.round((9 + Math.floor(rand() * 3)) * greeneryDensity));
   for (let i = 0; i < greenCount; i++) {
-    const t = i / Math.max(1, greenCount - 1); // 0→1, left→right
-    const edgeFactor = Math.abs(t - 0.5) * 2;  // 0 center, 1 edge
+    const t = i / Math.max(1, greenCount - 1);
+    const edgeFactor = Math.abs(t - 0.5) * 2;
     const type = palette.greenery[i % palette.greenery.length];
     const natural = pickNatural(rand, type);
-    // Greenery hugs the silhouette: position halfway between center and edge
-    // (instead of always at the rim) and shrinks toward the edge so leaves
-    // stop poking outside the wrap.
     const yPos = -26 - edgeFactor * 30 - rand() * 4;
     const halfW = silhouetteHalfWidth(yPos);
     const spreadX = (t * 2 - 1) * halfW * 0.78 + (rand() - 0.5) * 4;
-    const scale = (1.25 + rand() * 0.35) * (1 - 0.18 * edgeFactor);
+    // ─── FIX 2: Larger greenery scale ───
+    const scale = (1.65 + rand() * 0.45) * (1 - 0.18 * edgeFactor);
     const rotation = (t - 0.5) * 55 + (rand() - 0.5) * 10;
     const pos = silhouetteClamp(spreadX, yPos, scale);
     flowers.push({
@@ -351,18 +321,17 @@ export function composeBouquet(
     });
   }
 
-  // === MID LAYER: Secondary flowers — golden-angle spiral around crown ===
+  // === MID LAYER: Secondary flowers — golden-angle spiral ===
   const secCount = Math.max(2, Math.round((7 + Math.floor(rand() * 3)) * flowerDensity));
-  const GOLDEN = Math.PI * (3 - Math.sqrt(5)); // ≈137.5°
+  const GOLDEN = Math.PI * (3 - Math.sqrt(5));
   const spiralAngle0 = rand() * Math.PI * 2;
   for (let i = 0; i < secCount; i++) {
     const angle = spiralAngle0 + i * GOLDEN;
-    const radius = 8 + Math.sqrt(i + 1) * 7.5; // tight in center, opens outward
+    const radius = 8 + Math.sqrt(i + 1) * 7.5;
     const rawX = Math.cos(angle) * radius;
     const rawY = -38 + Math.sin(angle) * radius * 0.5;
-    const baseScale = 1.1 + rand() * 0.35;
-    // Edge-falloff: smaller scale near the silhouette edge so big blooms
-    // never hang off the side.
+    // ─── FIX 2: Larger secondary scale ───
+    const baseScale = 1.55 + rand() * 0.4;
     const halfWHere = silhouetteHalfWidth(rawY);
     const edgeFactor = Math.min(1, Math.abs(rawX) / halfWHere);
     const scale = baseScale * (1 - 0.3 * edgeFactor);
@@ -370,7 +339,6 @@ export function composeBouquet(
     const natural = pickNatural(rand, type, favouriteColour, moodTint);
     const pos = settle(rawX, rawY, scale, 16);
     placed.push({ x: pos.x, y: pos.y, scale });
-    // Bias rotation outward from center for a natural radiating fan; cap jitter.
     const outwardTilt = Math.sign(pos.x) * Math.min(8, Math.abs(pos.x) * 0.25);
     flowers.push({
       type, x: pos.x, y: pos.y, scale,
@@ -380,23 +348,22 @@ export function composeBouquet(
     });
   }
 
-  // === FRONT LAYER: Focal flowers — strict triangular dome ===
-  // 3 anchors form the dome; optional 4th tucks into the crown.
+  // === FRONT LAYER: Focal flowers — triangular dome ===
   const focalCount = Math.max(3, Math.min(5, Math.round((3 + (rand() < 0.5 ? 0 : 1)) * flowerDensity)));
-  const variantJitter = ((variant % 7) - 3) * 0.6; // deterministic per-variant offset
+  const variantJitter = ((variant % 7) - 3) * 0.6;
   const focalPositions = [
-    { x: 0 + variantJitter, y: -56 },           // crown apex
-    { x: -22 - variantJitter * 0.5, y: -38 },   // lower-left
-    { x: 22 + variantJitter * 0.5, y: -40 },    // lower-right
-    { x: -6 + variantJitter * 0.4, y: -46 },    // upper-left tuck
-    { x: 8 - variantJitter * 0.4, y: -50 },     // upper-right tuck
+    { x: 0 + variantJitter,            y: -56 },
+    { x: -22 - variantJitter * 0.5,    y: -38 },
+    { x: 22 + variantJitter * 0.5,     y: -40 },
+    { x: -6 + variantJitter * 0.4,     y: -46 },
+    { x: 8 - variantJitter * 0.4,      y: -50 },
   ];
   for (let i = 0; i < focalCount; i++) {
     const base = focalPositions[i];
     const type = palette.focal[i % palette.focal.length];
     const natural = pickNatural(rand, type, favouriteColour, moodTint);
-    const baseScale = 1.7 + rand() * 0.35;
-    // Center-largest, edges-smaller scale curve.
+    // ─── FIX 2: Larger focal scale ───
+    const baseScale = 2.3 + rand() * 0.45;
     const edgeFactor = Math.min(1, Math.abs(base.x) / silhouetteHalfWidth(base.y));
     const scale = baseScale * (1 - 0.22 * edgeFactor);
     const pos = settle(base.x, base.y, scale, 22);
@@ -410,7 +377,7 @@ export function composeBouquet(
     });
   }
 
-  // === Filler: baby's breath in gaps — silhouette-aware ===
+  // === Filler: baby's breath ===
   const fillerCount = Math.max(2, Math.round((8 + Math.floor(rand() * 3)) * greeneryDensity));
   for (let i = 0; i < fillerCount; i++) {
     const natural = pickNatural(rand, "babys_breath", undefined, moodTint);
@@ -442,8 +409,6 @@ export function composeBouquet(
 }
 
 // ─── Per-style palette transforms ───────────────────────
-// Each art style applies a distinct color transform so the four styles read
-// as genuinely different visual languages, not just different filters.
 function rgbToHsl(hex: string): [number, number, number] {
   const h = hex.replace("#", "");
   const r = parseInt(h.substring(0, 2), 16) / 255;
@@ -462,6 +427,7 @@ function rgbToHsl(hex: string): [number, number, number] {
   }
   return [hh, s, l];
 }
+
 function hslToHex(h: number, s: number, l: number): string {
   s = Math.max(0, Math.min(1, s));
   l = Math.max(0, Math.min(1, l));
@@ -479,6 +445,7 @@ function hslToHex(h: number, s: number, l: number): string {
   const to = (v: number) => Math.round((v + m) * 255).toString(16).padStart(2, "0");
   return `#${to(r)}${to(g)}${to(b)}`;
 }
+
 function quantize(v: number, steps: number) {
   return Math.round(v * steps) / steps;
 }
@@ -490,32 +457,27 @@ function applyStylePalette(
   style: ArtStyle
 ): { color: string; accentColor: string } {
   const [h, s, l] = rgbToHsl(color);
-  const [ah, as, al] = rgbToHsl(accent);
+  const [ah, as_, al] = rgbToHsl(accent);
   switch (style) {
     case "flat": {
-      // Bold poster colors: saturation boosted, lightness pushed to mid.
       const c = hslToHex(h, Math.min(1, s * 1.35 + 0.1), Math.max(0.42, Math.min(0.62, l)));
-      const a = hslToHex(ah, Math.min(1, as * 1.25 + 0.1), Math.max(0.3, Math.min(0.5, al)));
+      const a = hslToHex(ah, Math.min(1, as_ * 1.25 + 0.1), Math.max(0.3, Math.min(0.5, al)));
       return { color: c, accentColor: a };
     }
     case "botanical": {
-      // Vintage botanical print: desaturated, slightly warm, darker accents.
       const c = hslToHex(h + 8, s * 0.45, Math.max(0.4, l * 0.92));
-      const a = hslToHex(ah + 5, as * 0.5, Math.max(0.22, al * 0.7));
+      const a = hslToHex(ah + 5, as_ * 0.5, Math.max(0.22, al * 0.7));
       return { color: c, accentColor: a };
     }
     case "pixel": {
-      // Lock to a chunky 8-bit palette: hue snapped to 30° steps,
-      // saturation/lightness quantized to 4 tiers.
       const ph = Math.round(h / 30) * 30;
       const c = hslToHex(ph, quantize(Math.min(1, s * 1.2), 4), quantize(l, 4));
-      const a = hslToHex(ph, quantize(Math.min(1, as * 1.2), 4), quantize(Math.max(0.2, al - 0.1), 4));
+      const a = hslToHex(ph, quantize(Math.min(1, as_ * 1.2), 4), quantize(Math.max(0.2, al - 0.1), 4));
       return { color: c, accentColor: a };
     }
     case "watercolour": {
-      // Soft pastel washes: high lightness, low-mid saturation, hue unchanged.
       const c = hslToHex(h, Math.min(0.55, s * 0.7), Math.min(0.88, l + 0.18));
-      const a = hslToHex(ah, Math.min(0.5, as * 0.65), Math.min(0.78, al + 0.12));
+      const a = hslToHex(ah, Math.min(0.5, as_ * 0.65), Math.min(0.78, al + 0.12));
       return { color: c, accentColor: a };
     }
     default:

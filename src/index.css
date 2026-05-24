@@ -86,6 +86,11 @@
   }
 }
 
+/* Hide internal flower stems — external curved stems handle this */
+.bouquet-stem-internal {
+  display: none;
+}
+
 @layer base {
   * {
     @apply border-border;
