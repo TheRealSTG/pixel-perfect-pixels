@@ -630,9 +630,7 @@ const BouquetCanvas: React.FC<Props> = ({
         </filter>
       </defs>
 
-      {isWatercolour && (
-        <ellipse cx="0" cy="-20" rx="80" ry="70" fill="url(#wc-wash)" />
-      )}
+
       {isBotanical && (
         <rect x="-100" y="-100" width="200" height="200" fill="url(#bot-paper)" />
       )}
@@ -650,17 +648,7 @@ const BouquetCanvas: React.FC<Props> = ({
             : undefined
         }
       >
-        {/* Watercolour under-wash layer */}
-        {isWatercolour && (
-          <g filter="url(#wc-wash-blur)" opacity={0.45}>
-            {backLayerFlowers
-              .slice(0, Math.min(backLayerFlowers.length, visibleCount))
-              .map((f, i) => renderFlower(f, i))}
-            {midFrontFlowers
-              .slice(0, Math.max(0, visibleCount - backLayerFlowers.length))
-              .map((f, i) => renderFlower(f, i + backLayerFlowers.length))}
-          </g>
-        )}
+       
 
         {/* Back layer flowers */}
         {backLayerFlowers
@@ -695,7 +683,7 @@ const BouquetCanvas: React.FC<Props> = ({
         midFrontFlowers
           .slice(0, Math.max(0, visibleCount - backLayerFlowers.length))
           .map((f, i) => {
-            const startY = f.y + 4 * f.scale;
+            const startY = f.y + 2 * f.scale;
             const UNIFIED_END_Y = 7;
             const wrapEndY = UNIFIED_END_Y * wrapScale;
             const maxLen = Math.max(0, wrapEndY - startY);

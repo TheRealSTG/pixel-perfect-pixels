@@ -352,11 +352,11 @@ export function composeBouquet(
   const focalCount = Math.max(3, Math.min(5, Math.round((3 + (rand() < 0.5 ? 0 : 1)) * flowerDensity)));
   const variantJitter = ((variant % 7) - 3) * 0.6;
   const focalPositions = [
-    { x: 0 + variantJitter,            y: -56 },
-    { x: -22 - variantJitter * 0.5,    y: -38 },
-    { x: 22 + variantJitter * 0.5,     y: -40 },
-    { x: -6 + variantJitter * 0.4,     y: -46 },
-    { x: 8 - variantJitter * 0.4,      y: -50 },
+  { x: 0 + variantJitter,            y: -46 },
+  { x: -22 - variantJitter * 0.5,    y: -32 },
+  { x: 22 + variantJitter * 0.5,     y: -34 },
+  { x: -6 + variantJitter * 0.4,     y: -40 },
+  { x: 8 - variantJitter * 0.4,      y: -44 },
   ];
   for (let i = 0; i < focalCount; i++) {
     const base = focalPositions[i];
