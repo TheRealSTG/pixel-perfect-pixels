@@ -248,12 +248,8 @@ useEffect(() => {
         </radialGradient>
 
         <filter id="flat-poster" x="-5%" y="-5%" width="110%" height="110%">
-          <feColorMatrix type="saturate" values="1.4" result="sat" />
-          <feComponentTransfer in="sat">
-            <feFuncR type="discrete" tableValues="0.15 0.5 0.78 0.95" />
-            <feFuncG type="discrete" tableValues="0.25 0.58 0.82 0.95" />
-            <feFuncB type="discrete" tableValues="0.15 0.5 0.78 0.95" />
-          </feComponentTransfer>
+          {/* Gentle clean boost — bold but true-to-palette flat vector look */}
+          <feColorMatrix type="saturate" values="1.12" />
         </filter>
 
         <filter id="pixel-crunch" x="-5%" y="-5%" width="110%" height="110%">
