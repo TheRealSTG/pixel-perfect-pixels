@@ -460,8 +460,11 @@ function applyStylePalette(
   const [ah, as_, al] = rgbToHsl(accent);
   switch (style) {
     case "flat": {
-      const c = hslToHex(h, Math.min(1, s * 1.35 + 0.1), Math.max(0.42, Math.min(0.62, l)));
-      const a = hslToHex(ah, Math.min(1, as_ * 1.25 + 0.1), Math.max(0.3, Math.min(0.5, al)));
+      // Clean, bold flat colours. Keep whites/creams light instead of
+      // darkening them into muddy salmon tones.
+      if (s < 0.15) return { color, accentColor: accent };
+      const c = hslToHex(h, Math.min(0.85, s * 1.12 + 0.04), Math.max(0.5, Math.min(0.72, l)));
+      const a = hslToHex(ah, Math.min(0.8, as_ * 1.08 + 0.04), Math.max(0.38, Math.min(0.58, al)));
       return { color: c, accentColor: a };
     }
     case "botanical": {
