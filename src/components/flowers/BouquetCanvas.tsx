@@ -297,30 +297,39 @@ useEffect(() => {
         {midFrontFlowers.map((f, i) => renderFlower(f, i + backLayerFlowers.length))}
       </g>
 
-      {/* Stems rendered outside filter — bright green unaffected by style filters */}
+      {/* Stems rendered outside filter — bright green, unaffected by style
+          filters. Every stem curves into a single central tie point just
+          above the wrap so the bundle stays gathered and never pokes out the
+          sides of the wrap silhouette. */}
       {!hideStems && stemLength > 0 &&
-        midFrontFlowers.map((f, i) => {
-          const startY = f.y + 1 * f.scale;
+        (() => {
           const UNIFIED_END_Y = 7;
-          const wrapEndY = UNIFIED_END_Y * wrapScale;
-          const maxLen = Math.max(0, wrapEndY - startY);
-          const len = Math.max(0, maxLen * stemLength);
-          if (len < 0.5) return null;
-          const endY = startY + len;
-          const controlX = f.x * 0.15;
-          const controlY = (startY + endY) / 2 + 3;
-          return (
-            <path
-              key={`stem-${f.type}-${f.x}-${f.y}-${i}`}
-              d={`M ${f.x} ${startY} Q ${controlX} ${controlY} ${f.x * 0.25} ${endY}`}
-              stroke="#6BA06B"
-              strokeWidth={1 + 0.4 * f.scale}
-              fill="none"
-              opacity={0.8}
-              strokeLinecap="round"
-            />
-          );
-        })}
+          const tieY = UNIFIED_END_Y * wrapScale;
+          return midFrontFlowers.map((f, i) => {
+            const startY = f.y + 1 * f.scale;
+            const maxLen = Math.max(0, tieY - startY);
+            const len = Math.max(0, maxLen * stemLength);
+            if (len < 0.5) return null;
+            const endY = startY + len;
+            const fullness = maxLen > 0.01 ? len / maxLen : 0;
+            // Converge toward centre: the closer the stem reaches the tie
+            // point, the tighter it gathers around x = 0.
+            const endX = f.x * (1 - 0.92 * fullness);
+            const controlX = f.x * (1 - 0.55 * fullness);
+            const controlY = (startY + endY) / 2 + 3;
+            return (
+              <path
+                key={`stem-${f.type}-${f.x}-${f.y}-${i}`}
+                d={`M ${f.x} ${startY} Q ${controlX} ${controlY} ${endX} ${endY}`}
+                stroke="#6BA06B"
+                strokeWidth={1 + 0.4 * f.scale}
+                fill="none"
+                opacity={0.8}
+                strokeLinecap="round"
+              />
+            );
+          });
+        })()}
 
       {isPixel && (
         <rect x="-100" y="-100" width="200" height="200"
