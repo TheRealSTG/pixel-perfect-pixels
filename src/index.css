@@ -4,6 +4,11 @@
 @tailwind components;
 @tailwind utilities;
 
+@keyframes bloom-pop {
+  0% { transform: scale(0.3); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
 @layer base {
   :root {
     --background: 30 33% 97%;

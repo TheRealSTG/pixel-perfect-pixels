@@ -20,7 +20,6 @@ const BouquetResult = () => {
   const customWrapStyle = state?.wrapStyle;
   const customStemLength = state?.stemLength;
 
-  // Live editable controls (only used in guided mode — pro mode uses customFlowers).
   const [occasion, setOccasion] = useState<Occasion>(initialConfig?.occasion ?? "birthday");
   const [mood, setMood] = useState<Mood>(initialConfig?.mood ?? "just-because");
   const [city, setCity] = useState<string>(initialConfig?.recipient.city ?? "");
@@ -33,9 +32,8 @@ const BouquetResult = () => {
   const [hideStems, setHideStems] = useState<boolean>(false);
   const [wrapScale, setWrapScale] = useState<number>(0.85);
 
-  // Auto-play shuffle through layout variants.
   const [autoPlay, setAutoPlay] = useState<boolean>(false);
-  const [autoPlaySpeed, setAutoPlaySpeed] = useState<number>(2000); // ms per variant
+  const [autoPlaySpeed, setAutoPlaySpeed] = useState<number>(2000);
 
   useEffect(() => {
     if (!autoPlay || isPro) return;
@@ -59,30 +57,20 @@ const BouquetResult = () => {
     );
   }
   const config = initialConfig;
-
   const isPro = !!customFlowers;
 
-  // Recompute composition live whenever any guided control changes.
   const composition = useMemo(() => {
     if (isPro) {
       const wrap = wrapStyles[wrapStyle];
-      return {
-        flowers: customFlowers!,
-        wrapColor: wrap.color,
-        wrapAccent: wrap.accent,
-        backgroundColor: "#F8F5F0",
-        wrapStyle,
-      };
+      return { flowers: customFlowers!, wrapColor: wrap.color, wrapAccent: wrap.accent, backgroundColor: "#F8F5F0", wrapStyle };
     }
     const c = composeBouquet(occasion, mood, config.artStyle, config.recipient.name, config.recipient.favouriteColour, city, {
       variant, flowerDensity, greeneryDensity,
     });
-    // Allow user override of wrap style after composition.
     const wrap = wrapStyles[wrapStyle];
     return { ...c, wrapStyle, wrapColor: wrap.color, wrapAccent: wrap.accent };
   }, [isPro, customFlowers, occasion, mood, city, config.artStyle, config.recipient.name, config.recipient.favouriteColour, variant, flowerDensity, greeneryDensity, wrapStyle]);
 
-  // Pre-compute layout variants for the picker (guided mode only).
   const variantThumbs = useMemo(() => {
     if (isPro) return [];
     return Array.from({ length: variantCount }, (_, v) => ({
@@ -95,7 +83,6 @@ const BouquetResult = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-secondary/20">
-      {/* Decorative top bar */}
       <nav className="sticky top-0 z-20 backdrop-blur-md bg-background/70 border-b border-border/40">
         <div className="flex items-center justify-between px-6 py-3 max-w-6xl mx-auto">
           <button onClick={() => navigate("/create")}
@@ -111,7 +98,6 @@ const BouquetResult = () => {
       </nav>
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 pb-24 pt-8">
-        {/* Hero header */}
         <header className="text-center mb-10 animate-fade-up">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary/40 border border-border/50 mb-4">
             <span className="text-xs font-sans text-secondary-foreground tracking-wider uppercase">A bouquet for</span>
@@ -120,18 +106,14 @@ const BouquetResult = () => {
             <span className="text-gradient-rose">{config.recipient.name}</span>
           </h2>
           {config.recipient.relationship && (
-            <p className="text-sm font-sans text-muted-foreground mt-2 italic">
-              Your {config.recipient.relationship}
-            </p>
+            <p className="text-sm font-sans text-muted-foreground mt-2 italic">Your {config.recipient.relationship}</p>
           )}
         </header>
 
-        {/* Two-column: canvas + side controls on desktop */}
         <div className="grid lg:grid-cols-[1.4fr_1fr] gap-6 lg:gap-8 items-start">
-          {/* Canvas card */}
+          {/* Canvas card — solid background prevents thumbnail bleed-through */}
           <div className="animate-fade-up-delay-1 lg:sticky lg:top-20">
-            <div className="relative rounded-3xl bg-gradient-to-br from-card via-background to-secondary/30 border border-border/60 shadow-xl shadow-primary/5 p-4 sm:p-6 overflow-hidden">
-              {/* corner ornaments */}
+            <div className="relative rounded-3xl bg-[#FAF7F4] border border-border/60 shadow-xl shadow-primary/5 p-4 sm:p-6 overflow-hidden">
               <div className="absolute -top-12 -right-12 w-40 h-40 rounded-full bg-accent/10 blur-3xl pointer-events-none" />
               <div className="absolute -bottom-12 -left-12 w-40 h-40 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
               <BouquetCanvas
@@ -148,176 +130,163 @@ const BouquetResult = () => {
               {!isPro && (
                 <div className="mt-3 flex items-center justify-center gap-1.5 text-[11px] font-sans text-muted-foreground">
                   <span>Layout {variant + 1} of {variantCount}</span>
-                  {autoPlay && <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary"><span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" /> Auto-playing</span>}
+                  {autoPlay && (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+                      <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" /> Auto-playing
+                    </span>
+                  )}
                 </div>
               )}
             </div>
           </div>
 
-          {/* Controls column */}
           <div className="space-y-4 animate-fade-up-delay-2">
-          {!isPro && (
-            <>
-              <div className="p-4 rounded-2xl bg-card border border-border space-y-3">
-                <h3 className="text-xs font-sans font-semibold text-foreground">🎯 Tweak your bouquet</h3>
-                <div className="grid sm:grid-cols-3 gap-3">
-                  <label className="block">
-                    <span className="text-[10px] font-sans text-muted-foreground block mb-1">Occasion</span>
-                    <select value={occasion} onChange={(e) => setOccasion(e.target.value as Occasion)}
-                      className="w-full text-xs font-sans px-2 py-1.5 rounded-md bg-background border border-border">
-                      {occasions.map((o) => <option key={o.id} value={o.id}>{o.emoji} {o.label}</option>)}
-                    </select>
-                  </label>
-                  <label className="block">
-                    <span className="text-[10px] font-sans text-muted-foreground block mb-1">Mood</span>
-                    <select value={mood} onChange={(e) => setMood(e.target.value as Mood)}
-                      className="w-full text-xs font-sans px-2 py-1.5 rounded-md bg-background border border-border">
-                      {moods.map((m) => <option key={m.id} value={m.id}>{m.label}</option>)}
-                    </select>
-                  </label>
-                  <label className="block">
-                    <span className="text-[10px] font-sans text-muted-foreground block mb-1">City</span>
-                    <input value={city} onChange={(e) => setCity(e.target.value)} placeholder="e.g. Tokyo"
-                      className="w-full text-xs font-sans px-2 py-1.5 rounded-md bg-background border border-border" />
-                  </label>
-                </div>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-card border border-border space-y-3">
-                <div className="flex items-center justify-between gap-2">
-                  <h3 className="text-xs font-sans font-semibold text-foreground">🌸 Pick a layout</h3>
-                  <div className="flex items-center gap-1.5">
-                    <button
-                      onClick={() => setVariant(Math.floor(Math.random() * variantCount))}
-                      className="text-[10px] font-sans px-2.5 py-1 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
-                      title="Pick a random layout"
-                    >
-                      🎲 Shuffle
-                    </button>
-                    <button
-                      onClick={() => setVariantCount((c) => Math.min(c + 4, 24))}
-                      className="text-[10px] font-sans px-2.5 py-1 rounded-full bg-muted hover:bg-muted/70 transition-colors"
-                      title="Generate more variants"
-                    >
-                      + More
-                    </button>
+            {!isPro && (
+              <>
+                <div className="p-4 rounded-2xl bg-card border border-border space-y-3">
+                  <h3 className="text-xs font-sans font-semibold text-foreground">🎯 Tweak your bouquet</h3>
+                  <div className="grid sm:grid-cols-3 gap-3">
+                    <label className="block">
+                      <span className="text-[10px] font-sans text-muted-foreground block mb-1">Occasion</span>
+                      <select value={occasion} onChange={(e) => setOccasion(e.target.value as Occasion)}
+                        className="w-full text-xs font-sans px-2 py-1.5 rounded-md bg-background border border-border">
+                        {occasions.map((o) => <option key={o.id} value={o.id}>{o.emoji} {o.label}</option>)}
+                      </select>
+                    </label>
+                    <label className="block">
+                      <span className="text-[10px] font-sans text-muted-foreground block mb-1">Mood</span>
+                      <select value={mood} onChange={(e) => setMood(e.target.value as Mood)}
+                        className="w-full text-xs font-sans px-2 py-1.5 rounded-md bg-background border border-border">
+                        {moods.map((m) => <option key={m.id} value={m.id}>{m.label}</option>)}
+                      </select>
+                    </label>
+                    <label className="block">
+                      <span className="text-[10px] font-sans text-muted-foreground block mb-1">City</span>
+                      <input value={city} onChange={(e) => setCity(e.target.value)} placeholder="e.g. Tokyo"
+                        className="w-full text-xs font-sans px-2 py-1.5 rounded-md bg-background border border-border" />
+                    </label>
                   </div>
                 </div>
-                {/* Auto-play row */}
-                <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-secondary/30 border border-border/50">
-                  <button
-                    onClick={() => setAutoPlay((p) => !p)}
-                    className={`flex items-center gap-1.5 text-[11px] font-sans font-medium px-3 py-1.5 rounded-full transition-all ${
-                      autoPlay ? "bg-primary text-primary-foreground shadow-sm" : "bg-background border border-border hover:border-primary/40"
-                    }`}
-                  >
-                    {autoPlay ? "⏸ Pause" : "▶ Auto-play"}
-                  </button>
-                  <label className="flex-1 flex items-center gap-2">
-                    <span className="text-[10px] font-sans text-muted-foreground whitespace-nowrap">
-                      {(autoPlaySpeed / 1000).toFixed(1)}s
-                    </span>
-                    <input
-                      type="range" min="500" max="5000" step="250"
-                      value={autoPlaySpeed}
-                      onChange={(e) => setAutoPlaySpeed(Number(e.target.value))}
-                      className="flex-1 h-1.5 accent-primary"
-                    />
-                  </label>
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  {variantThumbs.map(({ v, comp }) => (
-                    <button key={v} onClick={() => setVariant(v)}
-                      className={`rounded-xl overflow-hidden border-2 transition-all ${
-                        variant === v ? "border-primary shadow-md scale-[1.02]" : "border-border hover:border-muted-foreground/40"
+
+                <div className="p-4 rounded-2xl bg-card border border-border space-y-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <h3 className="text-xs font-sans font-semibold text-foreground">🌸 Pick a layout</h3>
+                    <div className="flex items-center gap-1.5">
+                      <button onClick={() => setVariant(Math.floor(Math.random() * variantCount))}
+                        className="text-[10px] font-sans px-2.5 py-1 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors">
+                        🎲 Shuffle
+                      </button>
+                      <button onClick={() => setVariantCount((c) => Math.min(c + 4, 24))}
+                        className="text-[10px] font-sans px-2.5 py-1 rounded-full bg-muted hover:bg-muted/70 transition-colors">
+                        + More
+                      </button>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-secondary/30 border border-border/50">
+                    <button onClick={() => setAutoPlay((p) => !p)}
+                      className={`flex items-center gap-1.5 text-[11px] font-sans font-medium px-3 py-1.5 rounded-full transition-all ${
+                        autoPlay ? "bg-primary text-primary-foreground shadow-sm" : "bg-background border border-border hover:border-primary/40"
                       }`}>
-                      <div className="aspect-square bg-background">
-                        <BouquetCanvas
-                          flowers={comp.flowers}
-                          wrapColor={comp.wrapColor} wrapAccent={comp.wrapAccent}
-                          artStyle={config.artStyle} animated={false}
-                          wrapStyle={comp.wrapStyle}
-                          stemLength={stemLength} hideStems={hideStems} wrapScale={wrapScale}
-                        />
-                      </div>
-                      <p className="text-[11px] font-sans py-1.5 text-center text-muted-foreground">
-                        {variant === v ? "✓ " : ""}Layout {v + 1}
-                      </p>
+                      {autoPlay ? "⏸ Pause" : "▶ Auto-play"}
                     </button>
-                  ))}
+                    <label className="flex-1 flex items-center gap-2">
+                      <span className="text-[10px] font-sans text-muted-foreground whitespace-nowrap">
+                        {(autoPlaySpeed / 1000).toFixed(1)}s
+                      </span>
+                      <input type="range" min="500" max="5000" step="250" value={autoPlaySpeed}
+                        onChange={(e) => setAutoPlaySpeed(Number(e.target.value))}
+                        className="flex-1 h-1.5 accent-primary" />
+                    </label>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    {variantThumbs.map(({ v, comp }) => (
+                      <button key={v} onClick={() => setVariant(v)}
+                        className={`rounded-xl overflow-hidden border-2 transition-all ${
+                          variant === v ? "border-primary shadow-md scale-[1.02]" : "border-border hover:border-muted-foreground/40"
+                        }`}>
+                        <div className="aspect-square bg-[#FAF7F4]">
+                          <BouquetCanvas
+                            flowers={comp.flowers}
+                            wrapColor={comp.wrapColor} wrapAccent={comp.wrapAccent}
+                            artStyle={config.artStyle} animated={true}
+                            wrapStyle={comp.wrapStyle}
+                            stemLength={stemLength} hideStems={hideStems} wrapScale={wrapScale}
+                          />
+                        </div>
+                        <p className="text-[11px] font-sans py-1.5 text-center text-muted-foreground">
+                          {variant === v ? "✓ " : ""}Layout {v + 1}
+                        </p>
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
 
-              <div className="p-4 rounded-2xl bg-card border border-border space-y-3">
-                <h3 className="text-xs font-sans font-semibold text-foreground">🌿 Density</h3>
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <label className="block">
-                    <span className="text-[10px] font-sans text-muted-foreground flex justify-between mb-1">
-                      <span>Flowers</span><span>{Math.round(flowerDensity * 100)}%</span>
-                    </span>
-                    <input type="range" min="40" max="180" value={Math.round(flowerDensity * 100)}
-                      onChange={(e) => setFlowerDensity(Number(e.target.value) / 100)}
-                      className="w-full h-1.5 accent-primary" />
-                  </label>
-                  <label className="block">
-                    <span className="text-[10px] font-sans text-muted-foreground flex justify-between mb-1">
-                      <span>Greenery & filler</span><span>{Math.round(greeneryDensity * 100)}%</span>
-                    </span>
-                    <input type="range" min="40" max="180" value={Math.round(greeneryDensity * 100)}
-                      onChange={(e) => setGreeneryDensity(Number(e.target.value) / 100)}
-                      className="w-full h-1.5 accent-primary" />
-                  </label>
+                <div className="p-4 rounded-2xl bg-card border border-border space-y-3">
+                  <h3 className="text-xs font-sans font-semibold text-foreground">🌿 Density</h3>
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    <label className="block">
+                      <span className="text-[10px] font-sans text-muted-foreground flex justify-between mb-1">
+                        <span>Flowers</span><span>{Math.round(flowerDensity * 100)}%</span>
+                      </span>
+                      <input type="range" min="40" max="180" value={Math.round(flowerDensity * 100)}
+                        onChange={(e) => setFlowerDensity(Number(e.target.value) / 100)}
+                        className="w-full h-1.5 accent-primary" />
+                    </label>
+                    <label className="block">
+                      <span className="text-[10px] font-sans text-muted-foreground flex justify-between mb-1">
+                        <span>Greenery & filler</span><span>{Math.round(greeneryDensity * 100)}%</span>
+                      </span>
+                      <input type="range" min="40" max="180" value={Math.round(greeneryDensity * 100)}
+                        onChange={(e) => setGreeneryDensity(Number(e.target.value) / 100)}
+                        className="w-full h-1.5 accent-primary" />
+                    </label>
+                  </div>
                 </div>
-              </div>
-            </>
-          )}
+              </>
+            )}
 
-          <div className="p-4 rounded-2xl bg-card border border-border space-y-3">
-            <h3 className="text-xs font-sans font-semibold text-foreground">📦 Wrap & stems</h3>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              {Object.entries(wrapStyles).map(([key, ws]) => (
-                <button key={key} onClick={() => setWrapStyle(key as WrapStyle)}
-                  className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-left transition-all ${
-                    wrapStyle === key ? "bg-primary/10 ring-1 ring-primary/30" : "bg-muted/40 hover:bg-muted/70"
-                  }`}>
-                  <span className="text-sm">{ws.emoji}</span>
-                  <span className="text-[10px] font-sans font-medium text-foreground truncate">{ws.label}</span>
-                </button>
-              ))}
+            <div className="p-4 rounded-2xl bg-card border border-border space-y-3">
+              <h3 className="text-xs font-sans font-semibold text-foreground">📦 Wrap & stems</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {Object.entries(wrapStyles).map(([key, ws]) => (
+                  <button key={key} onClick={() => setWrapStyle(key as WrapStyle)}
+                    className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-left transition-all ${
+                      wrapStyle === key ? "bg-primary/10 ring-1 ring-primary/30" : "bg-muted/40 hover:bg-muted/70"
+                    }`}>
+                    <span className="text-sm">{ws.emoji}</span>
+                    <span className="text-[10px] font-sans font-medium text-foreground truncate">{ws.label}</span>
+                  </button>
+                ))}
+              </div>
+              <div className="grid sm:grid-cols-3 gap-4 pt-1">
+                <label className="block">
+                  <span className="text-[10px] font-sans text-muted-foreground flex justify-between mb-1">
+                    <span>Wrap size</span><span>{Math.round(wrapScale * 100)}%</span>
+                  </span>
+                  <input type="range" min="60" max="140" value={Math.round(wrapScale * 100)}
+                    onChange={(e) => setWrapScale(Number(e.target.value) / 100)}
+                    className="w-full h-1.5 accent-primary" />
+                </label>
+                <label className="block">
+                  <span className="text-[10px] font-sans text-muted-foreground flex justify-between mb-1">
+                    <span>Visible stem length</span><span>{hideStems ? "Hidden" : `${Math.round(stemLength * 100)}%`}</span>
+                  </span>
+                  <input type="range" min="0" max="150" value={Math.round(stemLength * 100)} disabled={hideStems}
+                    onChange={(e) => setStemLength(Number(e.target.value) / 100)}
+                    className="w-full h-1.5 accent-primary disabled:opacity-40" />
+                </label>
+                <label className="flex items-end gap-2 pb-1">
+                  <input type="checkbox" checked={hideStems} onChange={(e) => setHideStems(e.target.checked)}
+                    className="accent-primary" />
+                  <span className="text-[11px] font-sans text-foreground">Hide stems behind wrap</span>
+                </label>
+              </div>
             </div>
-            <div className="grid sm:grid-cols-3 gap-4 pt-1">
-              <label className="block">
-                <span className="text-[10px] font-sans text-muted-foreground flex justify-between mb-1">
-                  <span>Wrap size</span><span>{Math.round(wrapScale * 100)}%</span>
-                </span>
-                <input type="range" min="60" max="140" value={Math.round(wrapScale * 100)}
-                  onChange={(e) => setWrapScale(Number(e.target.value) / 100)}
-                  className="w-full h-1.5 accent-primary" />
-              </label>
-              <label className="block">
-                <span className="text-[10px] font-sans text-muted-foreground flex justify-between mb-1">
-                  <span>Visible stem length</span><span>{hideStems ? "Hidden" : `${Math.round(stemLength * 100)}%`}</span>
-                </span>
-                <input type="range" min="0" max="150" value={Math.round(stemLength * 100)} disabled={hideStems}
-                  onChange={(e) => setStemLength(Number(e.target.value) / 100)}
-                  className="w-full h-1.5 accent-primary disabled:opacity-40" />
-              </label>
-              <label className="flex items-end gap-2 pb-1">
-                <input type="checkbox" checked={hideStems} onChange={(e) => setHideStems(e.target.checked)}
-                  className="accent-primary" />
-                <span className="text-[11px] font-sans text-foreground">Hide stems behind wrap</span>
-              </label>
-            </div>
-          </div>
           </div>
         </div>
 
-        {/* Layout picker grid: prefer 4-col on 2-col grids, but only show in lg form here it's already in side panel — keep below for clarity on guided */}
-
         <div className="mt-12 text-center animate-fade-up-delay-2">
-          <p className="text-sm text-muted-foreground font-sans italic mb-6">
-            Crafted with care · Free forever 🌸
-          </p>
+          <p className="text-sm text-muted-foreground font-sans italic mb-6">Crafted with care · Free forever 🌸</p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <button onClick={() => navigate("/create")}
               className="px-8 py-3 bg-primary text-primary-foreground rounded-full font-sans font-medium text-sm hover:opacity-90 transition-opacity shadow-md hover:shadow-lg">
