@@ -405,21 +405,25 @@ const FloristStudio = () => {
                   );
                 })}
 
-                {/* Straight vertical stems — uniform endpoint across every wrap
-                    style so the stem-length slider maps to the same physical
-                    length here as in BouquetCanvas. y=7 sits just above the
-                    vase rim so stems never poke through any wrap. */}
-                {!hideStems && midFrontFlowers.map((f, i) => {
-                  const startY = f.y + 4 * f.scale;
-                  const wrapEndY = 7 * wrapScale;
-                  const maxLen = Math.max(0, wrapEndY - startY);
+                {/* Stems curve into a single central tie point just above the
+                    wrap (matches BouquetCanvas) so the bundle stays gathered
+                    and never pokes out the sides of any wrap style. */}
+                {!hideStems && midFrontFlowers.map((f) => {
+                  const startY = f.y + 1 * f.scale;
+                  const tieY = 7 * wrapScale;
+                  const maxLen = Math.max(0, tieY - startY);
                   const len = Math.max(0, maxLen * stemLength);
                   if (len < 0.5) return null;
+                  const endY = startY + len;
+                  const fullness = maxLen > 0.01 ? len / maxLen : 0;
+                  const endX = f.x * (1 - 0.92 * fullness);
+                  const controlX = f.x * (1 - 0.55 * fullness);
+                  const controlY = (startY + endY) / 2 + 3;
                   return (
-                    <line key={`stem-${f.id}`}
-                      x1={f.x} y1={startY} x2={f.x} y2={startY + len}
+                    <path key={`stem-${f.id}`}
+                      d={`M ${f.x} ${startY} Q ${controlX} ${controlY} ${endX} ${endY}`}
                       stroke="#5A8A5A" strokeWidth={1 + 0.4 * f.scale}
-                      opacity={0.7} strokeLinecap="round" />
+                      fill="none" opacity={0.7} strokeLinecap="round" />
                   );
                 })}
 
