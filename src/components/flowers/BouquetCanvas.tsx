@@ -330,16 +330,17 @@ useEffect(() => {
             // Natural taper: thicker near the bloom, thinning toward the
             // tie point so the gathered ends look bundled, not blunt.
             const baseW = 1 + 0.4 * f.scale;
-            const tipW = baseW * (0.45 + 0.15 * (1 - fullness));
+            const tipW = baseW * (0.35 + 0.15 * (1 - fullness));
+            // Build a filled tapered ribbon along the quadratic curve so the
+            // stem visibly narrows toward the gathered tie point.
+            const hb = baseW / 2;
+            const ht = tipW / 2;
             return (
               <path
                 key={`stem-${f.type}-${f.x}-${f.y}-${i}`}
-                d={`M ${f.x} ${startY} Q ${controlX} ${controlY} ${endX} ${endY}`}
-                stroke="#6BA06B"
-                strokeWidth={(baseW + tipW) / 2}
-                fill="none"
+                d={`M ${f.x - hb} ${startY} Q ${controlX - ht} ${controlY} ${endX - ht} ${endY} L ${endX + ht} ${endY} Q ${controlX + ht} ${controlY} ${f.x + hb} ${startY} Z`}
+                fill="#6BA06B"
                 opacity={0.78}
-                strokeLinecap="round"
               />
             );
           });
