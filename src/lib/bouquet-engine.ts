@@ -460,11 +460,21 @@ function applyStylePalette(
   const [ah, as_, al] = rgbToHsl(accent);
   switch (style) {
     case "flat": {
-      // Clean, bold flat colours. Keep whites/creams light instead of
-      // darkening them into muddy salmon tones.
-      if (s < 0.15) return { color, accentColor: accent };
-      const c = hslToHex(h, Math.min(0.85, s * 1.12 + 0.04), Math.max(0.5, Math.min(0.72, l)));
-      const a = hslToHex(ah, Math.min(0.8, as_ * 1.08 + 0.04), Math.max(0.38, Math.min(0.58, al)));
+      // Clean, bold flat colours. Whites, creams, highlights and pale
+      // skin tones are left untouched so they never turn muddy or garish.
+      // Only mid-saturation hues get a gentle, controlled poster boost.
+      const isCleanLight = s < 0.22 || l > 0.82;
+      if (isCleanLight) {
+        // Preserve highlight purity, just nudge very pale tones a hair
+        // brighter so they read as clean paper-white rather than grey.
+        const c = hslToHex(h, s, Math.min(0.96, l > 0.82 ? l + 0.02 : l));
+        const a = hslToHex(ah, as_, Math.min(0.96, al > 0.82 ? al + 0.02 : al));
+        return { color: c, accentColor: a };
+      }
+      // Gentle saturation lift with a soft ceiling; keep lightness in a
+      // mid band so colours stay vivid but never neon or chalky.
+      const c = hslToHex(h, Math.min(0.78, s * 1.08 + 0.03), Math.max(0.46, Math.min(0.7, l)));
+      const a = hslToHex(ah, Math.min(0.74, as_ * 1.05 + 0.03), Math.max(0.36, Math.min(0.56, al)));
       return { color: c, accentColor: a };
     }
     case "botanical": {
