@@ -248,8 +248,9 @@ useEffect(() => {
         </radialGradient>
 
         <filter id="flat-poster" x="-5%" y="-5%" width="110%" height="110%">
-          {/* Gentle clean boost — bold but true-to-palette flat vector look */}
-          <feColorMatrix type="saturate" values="1.12" />
+          {/* Gentle clean boost — bold but true-to-palette flat vector look.
+              Kept low so whites, highlights and skin tones never blow out. */}
+          <feColorMatrix type="saturate" values="1.06" />
         </filter>
 
         <filter id="pixel-crunch" x="-5%" y="-5%" width="110%" height="110%">
