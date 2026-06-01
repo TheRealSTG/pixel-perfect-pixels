@@ -313,19 +313,32 @@ useEffect(() => {
             if (len < 0.5) return null;
             const endY = startY + len;
             const fullness = maxLen > 0.01 ? len / maxLen : 0;
+            // Deterministic per-stem jitter so each render is stable but the
+            // bundle still looks hand-gathered rather than mechanical.
+            const seed = Math.sin((f.x * 12.9898 + f.y * 78.233) * 0.5);
+            const jitter = seed - Math.floor(seed); // 0..1
             // Converge toward centre: the closer the stem reaches the tie
-            // point, the tighter it gathers around x = 0.
-            const endX = f.x * (1 - 0.92 * fullness);
-            const controlX = f.x * (1 - 0.55 * fullness);
-            const controlY = (startY + endY) / 2 + 3;
+            // point, the tighter it gathers around x = 0. A small jitter on
+            // the convergence keeps the cluster slightly irregular but never
+            // lets a stem cross past centre and poke out the far side.
+            const conv = 0.9 + jitter * 0.08; // 0.90..0.98
+            const endX = f.x * (1 - conv * fullness);
+            // Curvature variance: bow each stem a touch left/right.
+            const bow = (jitter - 0.5) * 6 * fullness;
+            const controlX = f.x * (1 - (0.5 + jitter * 0.18) * fullness) + bow;
+            const controlY = (startY + endY) / 2 + 2.5 + jitter * 2;
+            // Natural taper: thicker near the bloom, thinning toward the
+            // tie point so the gathered ends look bundled, not blunt.
+            const baseW = 1 + 0.4 * f.scale;
+            const tipW = baseW * (0.45 + 0.15 * (1 - fullness));
             return (
               <path
                 key={`stem-${f.type}-${f.x}-${f.y}-${i}`}
                 d={`M ${f.x} ${startY} Q ${controlX} ${controlY} ${endX} ${endY}`}
                 stroke="#6BA06B"
-                strokeWidth={1 + 0.4 * f.scale}
+                strokeWidth={(baseW + tipW) / 2}
                 fill="none"
-                opacity={0.8}
+                opacity={0.78}
                 strokeLinecap="round"
               />
             );
