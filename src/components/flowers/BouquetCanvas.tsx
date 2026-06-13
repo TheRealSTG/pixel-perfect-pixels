@@ -228,7 +228,12 @@ const BouquetCanvas: React.FC<Props> = ({
             look great and posterize was destroying them
         */}
         <filter id="flat-clean" x="-2%" y="-2%" width="104%" height="104%">
-          <feColorMatrix type="saturate" values="1.25" />
+          <feColorMatrix type="saturate" values="1.25"/>
+        </filter>  
+        <filter id="flat-poster" x="-5%" y="-5%" width="110%" height="110%">
+          {/* Gentle clean boost — bold but true-to-palette flat vector look.
+              Kept low so whites, highlights and skin tones never blow out. */}
+          <feColorMatrix type="saturate" values="1.06" />
         </filter>
 
         {/* ── Pixel: chunky 8-bit palette ── */}
@@ -292,25 +297,53 @@ const BouquetCanvas: React.FC<Props> = ({
         {midFrontFlowers.map((f, i) => renderFlower(f, i + backLayerFlowers.length))}
       </g>
 
-      {/* Stems outside filter — bright green, filter-immune */}
+      {/* Stems rendered outside filter — bright green, unaffected by style
+          filters. Every stem curves into a single central tie point just
+          above the wrap so the bundle stays gathered and never pokes out the
+          sides of the wrap silhouette. */}
       {!hideStems && stemLength > 0 &&
-        midFrontFlowers.map((f, i) => {
-          if (i >= visibleCount) return null;
-          const startY = f.y + 1 * f.scale;
-          const wrapEndY = 7 * wrapScale;
-          const maxLen = Math.max(0, wrapEndY - startY);
-          const len = Math.max(0, maxLen * stemLength);
-          if (len < 0.5) return null;
-          const endY = startY + len;
-          return (
-            <path
-              key={`stem-${f.type}-${f.x}-${f.y}-${i}`}
-              d={`M ${f.x} ${startY} Q ${f.x * 0.15} ${(startY + endY) / 2 + 3} ${f.x * 0.25} ${endY}`}
-              stroke="#6BA06B" strokeWidth={1 + 0.35 * f.scale}
-              fill="none" opacity={0.8} strokeLinecap="round"
-            />
-          );
-        })}
+        (() => {
+          const UNIFIED_END_Y = 7;
+          const tieY = UNIFIED_END_Y * wrapScale;
+          return midFrontFlowers.map((f, i) => {
+            const startY = f.y + 1 * f.scale;
+            const maxLen = Math.max(0, tieY - startY);
+            const len = Math.max(0, maxLen * stemLength);
+            if (len < 0.5) return null;
+            const endY = startY + len;
+            const fullness = maxLen > 0.01 ? len / maxLen : 0;
+            // Deterministic per-stem jitter so each render is stable but the
+            // bundle still looks hand-gathered rather than mechanical.
+            const seed = Math.sin((f.x * 12.9898 + f.y * 78.233) * 0.5);
+            const jitter = seed - Math.floor(seed); // 0..1
+            // Converge toward centre: the closer the stem reaches the tie
+            // point, the tighter it gathers around x = 0. A small jitter on
+            // the convergence keeps the cluster slightly irregular but never
+            // lets a stem cross past centre and poke out the far side.
+            const conv = 0.9 + jitter * 0.08; // 0.90..0.98
+            const endX = f.x * (1 - conv * fullness);
+            // Curvature variance: bow each stem a touch left/right.
+            const bow = (jitter - 0.5) * 6 * fullness;
+            const controlX = f.x * (1 - (0.5 + jitter * 0.18) * fullness) + bow;
+            const controlY = (startY + endY) / 2 + 2.5 + jitter * 2;
+            // Natural taper: thicker near the bloom, thinning toward the
+            // tie point so the gathered ends look bundled, not blunt.
+            const baseW = 1 + 0.4 * f.scale;
+            const tipW = baseW * (0.35 + 0.15 * (1 - fullness));
+            // Build a filled tapered ribbon along the quadratic curve so the
+            // stem visibly narrows toward the gathered tie point.
+            const hb = baseW / 2;
+            const ht = tipW / 2;
+            return (
+              <path
+                key={`stem-${f.type}-${f.x}-${f.y}-${i}`}
+                d={`M ${f.x - hb} ${startY} Q ${controlX - ht} ${controlY} ${endX - ht} ${endY} L ${endX + ht} ${endY} Q ${controlX + ht} ${controlY} ${f.x + hb} ${startY} Z`}
+                fill="#6BA06B"
+                opacity={0.78}
+              />
+            );
+          });
+        })()}
 
       {isPixel && (
         <rect x="-100" y="-100" width="200" height="200"
