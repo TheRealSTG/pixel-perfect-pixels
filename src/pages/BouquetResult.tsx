@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { composeBouquet, wrapStyles, type WrapStyle } from "@/lib/bouquet-engine";
 import BouquetCanvas from "@/components/flowers/BouquetCanvas";
-import { occasions, moods, type BouquetConfig, type Occasion, type Mood } from "@/lib/bouquet-data";
+import { occasions, moods, artStyles, type BouquetConfig, type Occasion, type Mood, type ArtStyle } from "@/lib/bouquet-data";
 
 interface LocationState {
   config: BouquetConfig;
@@ -28,9 +28,10 @@ const BouquetResult = () => {
   const [variantCount, setVariantCount] = useState<number>(8);
   const [flowerDensity, setFlowerDensity] = useState<number>(1);
   const [greeneryDensity, setGreeneryDensity] = useState<number>(1);
-  const [stemLength, setStemLength] = useState<number>(customStemLength ?? 0);
+  const [stemLength, setStemLength] = useState<number>(customStemLength ?? 0.6);
+  const [wrapScale, setWrapScale] = useState<number>(1.0);
   const [hideStems, setHideStems] = useState<boolean>(false);
-  const [wrapScale, setWrapScale] = useState<number>(0.85);
+  const [showStyleComparison, setShowStyleComparison] = useState<boolean>(false);
 
   const [autoPlay, setAutoPlay] = useState<boolean>(false);
   const [autoPlaySpeed, setAutoPlaySpeed] = useState<number>(2000);
@@ -56,6 +57,7 @@ const BouquetResult = () => {
       </div>
     );
   }
+
   const config = initialConfig;
   const isPro = !!customFlowers;
 
@@ -64,22 +66,40 @@ const BouquetResult = () => {
       const wrap = wrapStyles[wrapStyle];
       return { flowers: customFlowers!, wrapColor: wrap.color, wrapAccent: wrap.accent, backgroundColor: "#F8F5F0", wrapStyle };
     }
-    const c = composeBouquet(occasion, mood, config.artStyle, config.recipient.name, config.recipient.favouriteColour, city, {
-      variant, flowerDensity, greeneryDensity,
-    });
+    const c = composeBouquet(occasion, mood, config.artStyle, config.recipient.name,
+      config.recipient.favouriteColour, city, { variant, flowerDensity, greeneryDensity });
     const wrap = wrapStyles[wrapStyle];
     return { ...c, wrapStyle, wrapColor: wrap.color, wrapAccent: wrap.accent };
-  }, [isPro, customFlowers, occasion, mood, city, config.artStyle, config.recipient.name, config.recipient.favouriteColour, variant, flowerDensity, greeneryDensity, wrapStyle]);
+  }, [isPro, customFlowers, occasion, mood, city, config.artStyle, config.recipient.name,
+    config.recipient.favouriteColour, variant, flowerDensity, greeneryDensity, wrapStyle]);
+
+  // All 4 style compositions (same layout, different style palettes)
+  const allStyleCompositions = useMemo(() => {
+    if (!showStyleComparison) return null;
+    return (["flat", "botanical", "pixel", "watercolour"] as ArtStyle[]).map((style) => ({
+      style,
+      comp: composeBouquet(occasion, mood, style, config.recipient.name,
+        config.recipient.favouriteColour, city, { variant, flowerDensity, greeneryDensity }),
+    }));
+  }, [showStyleComparison, occasion, mood, config.recipient.name,
+    config.recipient.favouriteColour, city, variant, flowerDensity, greeneryDensity]);
 
   const variantThumbs = useMemo(() => {
     if (isPro) return [];
     return Array.from({ length: variantCount }, (_, v) => ({
       v,
-      comp: composeBouquet(occasion, mood, config.artStyle, config.recipient.name, config.recipient.favouriteColour, city, {
-        variant: v, flowerDensity, greeneryDensity,
-      }),
+      comp: composeBouquet(occasion, mood, config.artStyle, config.recipient.name,
+        config.recipient.favouriteColour, city, { variant: v, flowerDensity, greeneryDensity }),
     }));
-  }, [isPro, occasion, mood, city, config.artStyle, config.recipient.name, config.recipient.favouriteColour, flowerDensity, greeneryDensity, variantCount]);
+  }, [isPro, occasion, mood, city, config.artStyle, config.recipient.name,
+    config.recipient.favouriteColour, flowerDensity, greeneryDensity, variantCount]);
+
+  const styleLabels: Record<ArtStyle, string> = {
+    flat: "Flat Illustration",
+    botanical: "Botanical Print",
+    pixel: "Pixel Art",
+    watercolour: "Watercolour",
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-secondary/20">
@@ -110,22 +130,59 @@ const BouquetResult = () => {
           )}
         </header>
 
+        {/* ── Style comparison toggle button ── */}
+        <div className="flex justify-center mb-6">
+          <button
+            onClick={() => setShowStyleComparison((s) => !s)}
+            className={`flex items-center gap-2 px-5 py-2 rounded-full text-sm font-sans font-medium border transition-all ${
+              showStyleComparison
+                ? "bg-primary text-primary-foreground border-primary shadow-md"
+                : "bg-card border-border text-foreground hover:border-primary/40"
+            }`}
+          >
+            <span>🎨</span>
+            <span>{showStyleComparison ? "Hide style comparison" : "Compare all styles"}</span>
+          </button>
+        </div>
+
+        {/* ── Style comparison 2×2 grid ── */}
+        {showStyleComparison && allStyleCompositions && (
+          <div className="mb-10 p-5 rounded-3xl bg-[#FAF7F4] border border-border/60 shadow-lg">
+            <h3 className="text-center text-sm font-sans font-semibold text-foreground mb-4">
+              Layout {variant + 1} — all four styles
+            </h3>
+            <div className="grid grid-cols-2 gap-4">
+              {allStyleCompositions.map(({ style, comp }) => (
+                <div key={style} className="text-center">
+                  <div className="rounded-2xl bg-white/60 border border-border/40 p-2">
+                    <BouquetCanvas
+                      flowers={comp.flowers}
+                      wrapColor={comp.wrapColor} wrapAccent={comp.wrapAccent}
+                      artStyle={style} animated={false}
+                      wrapStyle={comp.wrapStyle}
+                      stemLength={0} hideStems={false} wrapScale={wrapScale}
+                    />
+                  </div>
+                  <p className="text-[11px] font-sans text-muted-foreground mt-1.5">{styleLabels[style]}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className="grid lg:grid-cols-[1.4fr_1fr] gap-6 lg:gap-8 items-start">
-          {/* Canvas card — solid background prevents thumbnail bleed-through */}
+          {/* Main canvas */}
           <div className="animate-fade-up-delay-1 lg:sticky lg:top-20">
             <div className="relative rounded-3xl bg-[#FAF7F4] border border-border/60 shadow-xl shadow-primary/5 p-4 sm:p-6 overflow-hidden">
               <div className="absolute -top-12 -right-12 w-40 h-40 rounded-full bg-accent/10 blur-3xl pointer-events-none" />
               <div className="absolute -bottom-12 -left-12 w-40 h-40 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
               <BouquetCanvas
                 flowers={composition.flowers}
-                wrapColor={composition.wrapColor}
-                wrapAccent={composition.wrapAccent}
+                wrapColor={composition.wrapColor} wrapAccent={composition.wrapAccent}
                 artStyle={config.artStyle}
                 animated={true}
                 wrapStyle={composition.wrapStyle}
-                stemLength={stemLength}
-                hideStems={hideStems}
-                wrapScale={wrapScale}
+                stemLength={stemLength} hideStems={hideStems} wrapScale={wrapScale}
               />
               {!isPro && (
                 <div className="mt-3 flex items-center justify-center gap-1.5 text-[11px] font-sans text-muted-foreground">
@@ -140,6 +197,7 @@ const BouquetResult = () => {
             </div>
           </div>
 
+          {/* Controls */}
           <div className="space-y-4 animate-fade-up-delay-2">
             {!isPro && (
               <>
@@ -208,9 +266,9 @@ const BouquetResult = () => {
                           <BouquetCanvas
                             flowers={comp.flowers}
                             wrapColor={comp.wrapColor} wrapAccent={comp.wrapAccent}
-                            artStyle={config.artStyle} animated={true}
+                            artStyle={config.artStyle} animated={false}
                             wrapStyle={comp.wrapStyle}
-                            stemLength={stemLength} hideStems={hideStems} wrapScale={wrapScale}
+                            stemLength={0} hideStems={false} wrapScale={wrapScale}
                           />
                         </div>
                         <p className="text-[11px] font-sans py-1.5 text-center text-muted-foreground">
@@ -228,7 +286,7 @@ const BouquetResult = () => {
                       <span className="text-[10px] font-sans text-muted-foreground flex justify-between mb-1">
                         <span>Flowers</span><span>{Math.round(flowerDensity * 100)}%</span>
                       </span>
-                      <input type="range" min="40" max="180" value={Math.round(flowerDensity * 100)}
+                      <input type="range" min="50" max="150" value={Math.round(flowerDensity * 100)}
                         onChange={(e) => setFlowerDensity(Number(e.target.value) / 100)}
                         className="w-full h-1.5 accent-primary" />
                     </label>
@@ -236,7 +294,7 @@ const BouquetResult = () => {
                       <span className="text-[10px] font-sans text-muted-foreground flex justify-between mb-1">
                         <span>Greenery & filler</span><span>{Math.round(greeneryDensity * 100)}%</span>
                       </span>
-                      <input type="range" min="40" max="180" value={Math.round(greeneryDensity * 100)}
+                      <input type="range" min="50" max="150" value={Math.round(greeneryDensity * 100)}
                         onChange={(e) => setGreeneryDensity(Number(e.target.value) / 100)}
                         className="w-full h-1.5 accent-primary" />
                     </label>

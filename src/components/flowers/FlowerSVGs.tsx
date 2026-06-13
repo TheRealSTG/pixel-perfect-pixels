@@ -266,7 +266,7 @@ export const Lavender: React.FC<FlowerProps> = ({
       ) : (
         <>
           {/* Slender stem — kept for lavender since it IS the visual structure */}
-          <path d="M 0 5 Q -1 14, 1 26 Q 2 34, 0 42" stroke="#6A8A5A" strokeWidth={style === "botanical" ? 1 : 1.3} fill="none" strokeLinecap="round" />
+          <path d="M 0 5 Q -1 14, 1 26 Q 2 34, 0 42" stroke="#6BA06B" strokeWidth={style === "botanical" ? 1 : 1.3} fill="none" strokeLinecap="round" />
           {/* Flower buds */}
           {[-15, -12, -9, -6, -3, 0].map((py, i) => {
             const sz = 1.2 + (5 - i) * 0.25;
@@ -399,7 +399,7 @@ export const Hyacinth: React.FC<FlowerProps> = ({
       ) : (
         <>
           {/* Stem kept — hyacinth florets need the central spike */}
-          <path d="M 0 6 Q -1 18, 1 32 Q 2 38, 0 44" stroke="#4A7A4A" strokeWidth={style === "botanical" ? 2 : 2.8} fill="none" strokeLinecap="round" />
+          <path d="M 0 6 Q -1 18, 1 32 Q 2 38, 0 44" stroke="#6BA06B" strokeWidth={style === "botanical" ? 2 : 2.8} fill="none" strokeLinecap="round" />
           {[-18, -14, -10, -6, -2, 2].map((py, row) => {
             const w = 2.5 + row * 0.7;
             const cols = row < 2 ? 2 : 3;

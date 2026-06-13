@@ -38,25 +38,20 @@ const BouquetCanvas: React.FC<Props> = ({
   hideStems = false,
   wrapScale = 0.85,
 }) => {
-  const [visibleCount, setVisibleCount] = useState(flowers.length);
+  const [visibleCount, setVisibleCount] = useState(animated ? 0 : flowers.length);
 
-useEffect(() => {
-  if (!animated) {
-    setVisibleCount(flowers.length);
-    return;
-  }
-  setVisibleCount(0);
-  const timers: ReturnType<typeof setTimeout>[] = [];
-  flowers.forEach((_, i) => {
-    timers.push(setTimeout(() => setVisibleCount((c) => c + 1), 80 + i * 45));
-  });
-  return () => timers.forEach(clearTimeout);
-}, [flowers, animated]);
+  useEffect(() => {
+    if (!animated) { setVisibleCount(flowers.length); return; }
+    setVisibleCount(0);
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    flowers.forEach((_, i) => {
+      timers.push(setTimeout(() => setVisibleCount((c) => c + 1), 80 + i * 50));
+    });
+    return () => timers.forEach(clearTimeout);
+  }, [flowers, animated]);
 
   const styleVariant: "flat" | "botanical" | "pixel" =
-    artStyle === "pixel" ? "pixel"
-    : artStyle === "botanical" ? "botanical"
-    : "flat";
+    artStyle === "pixel" ? "pixel" : artStyle === "botanical" ? "botanical" : "flat";
   const isWatercolour = artStyle === "watercolour";
   const isBotanical = artStyle === "botanical";
   const isPixel = artStyle === "pixel";
@@ -99,13 +94,9 @@ useEffect(() => {
             <path d="M -42 10 L 0 70 L 42 10 Q 30 14, 0 16 Q -30 14, -42 10 Z"
               fill={wrapColor} stroke={wrapAccent} strokeWidth={1} opacity={0.95} />
             <path d="M -28 12 L 0 60 L 28 12 Q 14 16, 0 17 Q -14 16, -28 12 Z" fill={wrapAccent} opacity={0.18} />
-            <path d="M -34 11 L -2 65" stroke={wrapAccent} strokeWidth={0.5} fill="none" opacity={0.3} />
-            <path d="M 34 11 L 2 65" stroke={wrapAccent} strokeWidth={0.5} fill="none" opacity={0.3} />
             <path d="M -42 10 Q -30 4, -16 8 Q 0 2, 16 8 Q 30 4, 42 10"
               fill={wrapColor} stroke={wrapAccent} strokeWidth={0.6} opacity={0.9} />
             <ellipse cx="0" cy="56" rx="8" ry="2.5" fill={wrapAccent} opacity={0.85} />
-            <path d="M -3 57 Q -5 64, -7 70" stroke={wrapAccent} strokeWidth={1.2} fill="none" opacity={0.6} />
-            <path d="M 3 57 Q 5 64, 7 70" stroke={wrapAccent} strokeWidth={1.2} fill="none" opacity={0.6} />
           </>
         );
       case "kraft":
@@ -113,15 +104,10 @@ useEffect(() => {
           <>
             <path d="M -42 10 Q -46 28, -38 48 L -24 68 L 24 68 L 38 48 Q 46 28, 42 10 Z"
               fill={wrapColor} stroke={wrapAccent} strokeWidth={1.2} opacity={0.95} />
-            <path d="M -38 16 Q 0 14, 38 16" stroke={wrapAccent} strokeWidth={0.5} fill="none" opacity={0.12} />
-            <path d="M -40 26 Q 0 24, 40 26" stroke={wrapAccent} strokeWidth={0.4} fill="none" opacity={0.1} />
-            <path d="M -36 38 Q 0 36, 36 38" stroke={wrapAccent} strokeWidth={0.3} fill="none" opacity={0.08} />
             <path d="M -42 10 Q -34 4, -24 8 Q -14 2, -4 8 Q 6 2, 16 8 Q 26 4, 36 8 Q 42 5, 42 10"
               fill={wrapColor} stroke={wrapAccent} strokeWidth={0.6} opacity={0.9} />
             <path d="M -30 18 Q 0 14, 30 18" stroke="#8B7355" strokeWidth={1.5} fill="none" opacity={0.6} strokeLinecap="round" />
             <circle cx="0" cy="16" r="2.5" fill="#7A6A50" opacity={0.6} />
-            <path d="M -1 18 Q -5 26, -8 32" stroke="#8B7355" strokeWidth={0.8} fill="none" opacity={0.35} />
-            <path d="M 1 18 Q 4 24, 6 30" stroke="#8B7355" strokeWidth={0.8} fill="none" opacity={0.35} />
           </>
         );
       case "tissue":
@@ -147,14 +133,9 @@ useEffect(() => {
               <line key={`h-${i}`} x1="-36" y1={12 + i * 5.5} x2="36" y2={12 + i * 5.5}
                 stroke={wrapAccent} strokeWidth={0.4} opacity={0.15} />
             ))}
-            {Array.from({ length: 8 }).map((_, i) => (
-              <line key={`v-${i}`} x1={-30 + i * 8} y1="12" x2={-28 + i * 8} y2="62"
-                stroke={wrapAccent} strokeWidth={0.3} opacity={0.1} />
-            ))}
             <path d="M -38 10 Q -30 6, -22 8 Q -12 4, -2 8 Q 8 4, 18 8 Q 28 6, 38 10"
               fill={wrapColor} stroke={wrapAccent} strokeWidth={1} opacity={0.85} />
             <path d="M -28 16 Q 0 12, 28 16" stroke="#7A6A50" strokeWidth={1.5} fill="none" opacity={0.5} />
-            <circle cx="0" cy="14" r="2.5" fill="#7A6A50" opacity={0.45} />
           </>
         );
       case "vase":
@@ -167,7 +148,6 @@ useEffect(() => {
               fill="#B8D8E8" opacity={0.12} />
             <path d="M -17 12 Q -19 25, -17 42 Q -15 50, -12 55"
               stroke="white" strokeWidth={2.5} opacity={0.18} fill="none" strokeLinecap="round" />
-            <ellipse cx="0" cy="8" rx="18" ry="3.5" fill="none" stroke={wrapAccent} strokeWidth={0.4} opacity={0.25} />
             <ellipse cx="0" cy="68" rx="10" ry="3" fill={wrapAccent} opacity={0.2} />
           </>
         );
@@ -176,66 +156,62 @@ useEffect(() => {
           <>
             <path d="M -40 10 Q -46 28, -34 50 L -22 68 L 22 68 L 34 50 Q 46 28, 40 10 Z"
               fill={wrapColor} stroke={wrapAccent} strokeWidth={1} opacity={0.92} />
-            <path d="M -18 12 Q -20 28, -16 48" stroke={wrapAccent} strokeWidth={0.5} fill="none" opacity={0.18} />
-            <path d="M 18 12 Q 20 28, 16 48" stroke={wrapAccent} strokeWidth={0.5} fill="none" opacity={0.18} />
-            <path d="M 0 10 Q -1 28, 0 52" stroke={wrapAccent} strokeWidth={0.3} fill="none" opacity={0.12} />
             <path d="M -40 10 Q -34 4, -26 8 Q -18 2, -10 7 Q -2 2, 6 7 Q 14 2, 22 7 Q 30 4, 38 8 Q 40 5, 40 10"
               fill={wrapColor} stroke={wrapAccent} strokeWidth={0.6} opacity={0.88} />
             <rect x="-34" y="16" width="68" height="5.5" rx="2.5" fill={wrapAccent} opacity={0.6} />
             <path d="M -8 18 Q -16 10, -7 8 Q -2 16, -8 18" fill={wrapAccent} opacity={0.65} />
             <path d="M 8 18 Q 16 10, 7 8 Q 2 16, 8 18" fill={wrapAccent} opacity={0.65} />
             <circle cx="0" cy="18" r="2.5" fill={wrapAccent} opacity={0.75} />
-            <path d="M -1 20 Q -4 28, -7 34" stroke={wrapAccent} strokeWidth={1.2} fill="none" opacity={0.35} />
-            <path d="M 1 20 Q 4 26, 6 32" stroke={wrapAccent} strokeWidth={1.2} fill="none" opacity={0.35} />
           </>
         );
     }
   };
 
- const renderFlower = (f: FlowerPlacement, i: number) => {
-  const FlowerComp = flowerComponents[f.type];
-  const hasDepth = f.layer === "front" || f.layer === "mid";
-  return (
-    <g
-      key={`${f.type}-${i}`}
-      filter={hasDepth ? "url(#bloom-shadow)" : undefined}
-      style={{
-        transformOrigin: `${f.x}px ${f.y}px`,
-        animation: animated ? `bloom-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both` : undefined,
-        animationDelay: animated ? `${80 + i * 45}ms` : undefined,
-      }}
-    >
-      <FlowerComp
-        x={f.x} y={f.y} scale={f.scale} rotation={f.rotation}
-        color={f.color} accentColor={f.accentColor} style={styleVariant}
-      />
-    </g>
-  );
-};
+  const renderFlower = (f: FlowerPlacement, i: number) => {
+    const FlowerComp = flowerComponents[f.type];
+    if (i >= visibleCount) return null;
+    const hasDepth = f.layer === "front" || f.layer === "mid";
+    return (
+      <g key={`${f.type}-${i}`} filter={hasDepth ? "url(#bloom-shadow)" : undefined}>
+        <FlowerComp
+          x={f.x} y={f.y} scale={f.scale} rotation={f.rotation}
+          color={f.color} accentColor={f.accentColor} style={styleVariant}
+        />
+      </g>
+    );
+  };
 
   return (
     <svg
       viewBox="-100 -100 200 200"
       className="w-full h-auto max-w-xs sm:max-w-sm mx-auto"
-      role="img"
-      aria-label="Your bouquet"
+      role="img" aria-label="Your bouquet"
       shapeRendering={isPixel ? "crispEdges" : "auto"}
     >
       <defs>
-        <filter id="wc-bleed" x="-20%" y="-20%" width="140%" height="140%">
-          <feTurbulence type="fractalNoise" baseFrequency="0.5" numOctaves="2" seed="4" result="noise" />
-          <feDisplacementMap in="SourceGraphic" in2="noise" scale="1.8" result="disp" />
-          <feGaussianBlur in="disp" stdDeviation="0.6" />
-        </filter>
+        {/* ── Watercolour: painted illustration feel ──
+    NOT a photo blur filter. Gives organic painted edges
+    while keeping flowers fully recognizable.
+    Colors are already pale/washed from applyStylePalette.
+*/}
+<filter id="wc-bleed" x="-8%" y="-8%" width="116%" height="116%">
+  {/* Rough organic edge on the source */}
+  <feTurbulence type="fractalNoise" baseFrequency="0.055" numOctaves="4" seed="12" result="noise" />
+  <feDisplacementMap in="SourceGraphic" in2="noise" scale="2.8"
+    xChannelSelector="R" yChannelSelector="G" result="displaced" />
+  {/* Tiny blur — just enough to soften pixel edges, not to smear */}
+  <feGaussianBlur in="displaced" stdDeviation="0.35" />
+</filter>
 
+        {/* ── Botanical: vintage ink print ── */}
         <filter id="bot-ink" x="-10%" y="-10%" width="120%" height="120%">
           <feColorMatrix type="saturate" values="0.55" result="desat" />
           <feColorMatrix in="desat"
             values="0.85 0.05 0 0 0.02  0 0.82 0 0 0.04  0 0 0.7 0 0.02  0 0 0 1 0"
             result="muted" />
-          <feMorphology in="muted" operator="dilate" radius="0.7" result="dilated" />
+          <feMorphology in="muted" operator="dilate" radius="0.6" result="dilated" />
           <feColorMatrix in="dilated"
-            values="0.18 0 0 0 0.04  0 0.18 0 0 0.06  0 0 0.18 0 0.03  0 0 0 1 0"
+            values="0.15 0 0 0 0.04  0 0.15 0 0 0.06  0 0 0.15 0 0.03  0 0 0 1 0"
             result="ink" />
           <feComposite in="muted" in2="ink" operator="over" />
         </filter>
@@ -247,15 +223,15 @@ useEffect(() => {
           <stop offset="100%" stopColor="#C8B488" stopOpacity="0.18" />
         </radialGradient>
 
-        <filter id="flat-poster" x="-5%" y="-5%" width="110%" height="110%">
-          <feColorMatrix type="saturate" values="1.4" result="sat" />
-          <feComponentTransfer in="sat">
-            <feFuncR type="discrete" tableValues="0.15 0.5 0.78 0.95" />
-            <feFuncG type="discrete" tableValues="0.25 0.58 0.82 0.95" />
-            <feFuncB type="discrete" tableValues="0.15 0.5 0.78 0.95" />
-          </feComponentTransfer>
+        {/* ── Flat: clean vector look, no posterize ──
+            Just a gentle saturation boost — the SVG gradients already
+            look great and posterize was destroying them
+        */}
+        <filter id="flat-clean" x="-2%" y="-2%" width="104%" height="104%">
+          <feColorMatrix type="saturate" values="1.25" />
         </filter>
 
+        {/* ── Pixel: chunky 8-bit palette ── */}
         <filter id="pixel-crunch" x="-5%" y="-5%" width="110%" height="110%">
           <feColorMatrix type="saturate" values="1.35" result="sat" />
           <feComponentTransfer in="sat">
@@ -269,11 +245,23 @@ useEffect(() => {
           <rect y="1" width="2" height="1" fill="#000" opacity="0.06" />
         </pattern>
 
+        {/* ── Watercolour paper wash ── */}
+        <radialGradient id="wc-paper-wash" cx="50%" cy="45%" r="70%">
+  <stop offset="0%" stopColor="#FDF6EE" stopOpacity="0.0" />
+  <stop offset="50%" stopColor="#F5E8D8" stopOpacity="0.45" />
+  <stop offset="100%" stopColor="#E8D0B8" stopOpacity="0.0" />
+</radialGradient>
+
+        {/* ── Depth shadow for blooms ── */}
         <filter id="bloom-shadow" x="-40%" y="-40%" width="180%" height="180%">
-          <feDropShadow dx="0" dy="2" stdDeviation="2.5" floodColor="#00000018" />
+          <feDropShadow dx="0" dy="1.5" stdDeviation="2" floodColor="#00000014" />
         </filter>
       </defs>
 
+      {/* Watercolour paper background wash */}
+      {isWatercolour && (
+  <ellipse cx="0" cy="-10" rx="95" ry="88" fill="url(#wc-paper-wash)" />
+)}
       {isBotanical && (
         <rect x="-100" y="-100" width="200" height="200" fill="url(#bot-paper)" />
       )}
@@ -281,47 +269,45 @@ useEffect(() => {
       <g
         filter={
           isWatercolour ? "url(#wc-bleed)"
-          : isBotanical ? "url(#bot-ink)"
-          : isFlat ? "url(#flat-poster)"
-          : isPixel ? "url(#pixel-crunch)"
+          : isBotanical  ? "url(#bot-ink)"
+          : isFlat       ? "url(#flat-clean)"
+          : isPixel      ? "url(#pixel-crunch)"
           : undefined
         }
       >
+        {/* Back layer: greenery */}
         {backLayerFlowers.map((f, i) => renderFlower(f, i))}
 
         {isBotanical && (
-          <ellipse cx="0" cy="-40" rx="50" ry="40"
-            fill="url(#bot-hatch)" opacity={0.35} pointerEvents="none" />
+          <ellipse cx="0" cy="-40" rx="48" ry="38"
+            fill="url(#bot-hatch)" opacity={0.30} pointerEvents="none" />
         )}
 
-        <g transform={`translate(0 ${10 - 10 * wrapScale}) scale(${wrapScale})`}>
+        {/* Wrap */}
+        <g transform={`translate(0 ${4 - 10 * wrapScale}) scale(${wrapScale})`}>
           {renderWrap()}
         </g>
 
+        {/* Mid + front flowers */}
         {midFrontFlowers.map((f, i) => renderFlower(f, i + backLayerFlowers.length))}
       </g>
 
-      {/* Stems rendered outside filter — bright green unaffected by style filters */}
+      {/* Stems outside filter — bright green, filter-immune */}
       {!hideStems && stemLength > 0 &&
         midFrontFlowers.map((f, i) => {
+          if (i >= visibleCount) return null;
           const startY = f.y + 1 * f.scale;
-          const UNIFIED_END_Y = 7;
-          const wrapEndY = UNIFIED_END_Y * wrapScale;
+          const wrapEndY = 7 * wrapScale;
           const maxLen = Math.max(0, wrapEndY - startY);
           const len = Math.max(0, maxLen * stemLength);
           if (len < 0.5) return null;
           const endY = startY + len;
-          const controlX = f.x * 0.15;
-          const controlY = (startY + endY) / 2 + 3;
           return (
             <path
               key={`stem-${f.type}-${f.x}-${f.y}-${i}`}
-              d={`M ${f.x} ${startY} Q ${controlX} ${controlY} ${f.x * 0.25} ${endY}`}
-              stroke="#6BA06B"
-              strokeWidth={1 + 0.4 * f.scale}
-              fill="none"
-              opacity={0.8}
-              strokeLinecap="round"
+              d={`M ${f.x} ${startY} Q ${f.x * 0.15} ${(startY + endY) / 2 + 3} ${f.x * 0.25} ${endY}`}
+              stroke="#6BA06B" strokeWidth={1 + 0.35 * f.scale}
+              fill="none" opacity={0.8} strokeLinecap="round"
             />
           );
         })}
