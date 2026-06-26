@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { getWeatherGreeting } from "@/lib/weather";
+import heroBouquet from "@/assets/hero-bouquet.png";
 
 const LandingPage = () => {
-  const [greeting, setGreeting] = useState<string | null>(null);
+  const [greeting, setGreeting] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -25,24 +26,31 @@ const LandingPage = () => {
         </button>
       </nav>
 
+      {/* Hero */}
       <main className="max-w-5xl mx-auto px-6 pt-8 pb-20">
-        {/* Weather greeting — only shows once loaded, no flash */}
-        <div className="animate-fade-up text-center mb-8 min-h-[24px]">
-          {greeting && (
-            <p className="text-sm font-sans text-muted-foreground tracking-wide">
-              {greeting}
-            </p>
-          )}
+        {/* Weather greeting */}
+        <div className="animate-fade-up text-center mb-8">
+          <p className="text-sm font-sans text-muted-foreground tracking-wide">
+            {greeting || "Something beautiful is coming…"}
+          </p>
         </div>
 
+        {/* Hero content */}
         <div className="flex flex-col items-center text-center">
-          {/* Flower emoji hero — no external image needed */}
+          {/* Bouquet image */}
           <div className="animate-fade-up-delay-1 mb-10">
-            <div className="animate-gentle-float text-[120px] leading-none select-none">
-              🌸
+            <div className="animate-gentle-float">
+              <img
+                src={heroBouquet}
+                alt="A beautiful illustrated bouquet of pink roses, white peonies, and lavender"
+                width={800}
+                height={1024}
+                className="w-64 sm:w-80 h-auto drop-shadow-lg"
+              />
             </div>
           </div>
 
+          {/* Headline */}
           <div className="animate-fade-up-delay-2 max-w-lg">
             <h2 className="text-4xl sm:text-5xl font-serif font-semibold text-foreground leading-tight mb-4">
               Send something{" "}
@@ -54,6 +62,7 @@ const LandingPage = () => {
             </p>
           </div>
 
+          {/* CTA */}
           <div className="animate-fade-up-delay-3 flex flex-col sm:flex-row gap-3">
             <button
               onClick={() => navigate("/create")}
@@ -63,7 +72,8 @@ const LandingPage = () => {
             </button>
             <button
               onClick={() => {
-                document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" });
+                const section = document.getElementById("how-it-works");
+                section?.scrollIntoView({ behavior: "smooth" });
               }}
               className="px-8 py-3.5 bg-secondary text-secondary-foreground rounded-full font-sans font-medium text-sm hover:opacity-80 transition-opacity"
             >
@@ -77,25 +87,29 @@ const LandingPage = () => {
           <h3 className="text-2xl font-serif font-semibold text-center mb-12 text-foreground">
             Three steps. Zero cost.
           </h3>
+
           <div className="grid sm:grid-cols-3 gap-8 max-w-3xl mx-auto">
             {[
               {
-                emoji: "💐",
                 step: "1",
                 title: "Choose an occasion",
-                description: "Birthday, anniversary, just because — pick the moment and set the mood.",
+                description:
+                  "Birthday, anniversary, just because — pick the moment and set the mood.",
+                emoji: "💐",
               },
               {
-                emoji: "✨",
                 step: "2",
                 title: "Personalise it",
-                description: "Add their name, choose an art style, and we'll compose something unique.",
+                description:
+                  "Add their name, choose an art style, and we'll compose something unique.",
+                emoji: "✨",
               },
               {
-                emoji: "💌",
                 step: "3",
                 title: "Send with love",
-                description: "Share a beautiful link via WhatsApp, text, or email. No account needed to view.",
+                description:
+                  "Share a beautiful link via WhatsApp, text, or email. No account needed to view.",
+                emoji: "💌",
               },
             ].map((item) => (
               <div key={item.step} className="text-center">
@@ -114,6 +128,7 @@ const LandingPage = () => {
           </div>
         </section>
 
+        {/* Footer tagline */}
         <div className="mt-32 text-center">
           <p className="text-sm text-muted-foreground font-sans italic">
             Made with care. Free, forever. 🌸
