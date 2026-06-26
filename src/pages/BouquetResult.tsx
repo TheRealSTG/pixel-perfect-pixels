@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { composeBouquet, wrapStyles, type WrapStyle } from "@/lib/bouquet-engine";
 import BouquetCanvas from "@/components/flowers/BouquetCanvas";
@@ -28,10 +28,11 @@ const BouquetResult = () => {
   const [variantCount, setVariantCount] = useState<number>(8);
   const [flowerDensity, setFlowerDensity] = useState<number>(1);
   const [greeneryDensity, setGreeneryDensity] = useState<number>(1);
-  const [stemLength, setStemLength] = useState<number>(customStemLength ?? 0.6);
+  const [stemLength, setStemLength] = useState<number>(customStemLength ?? 1.0);
   const [wrapScale, setWrapScale] = useState<number>(1.0);
   const [hideStems, setHideStems] = useState<boolean>(false);
   const [showStyleComparison, setShowStyleComparison] = useState<boolean>(false);
+  const [shareStatus, setShareStatus] = useState<"idle" | "copied" | "error">("idle");
 
   const [autoPlay, setAutoPlay] = useState<boolean>(false);
   const [autoPlaySpeed, setAutoPlaySpeed] = useState<number>(2000);
@@ -101,6 +102,39 @@ const BouquetResult = () => {
     watercolour: "Watercolour",
   };
 
+  // Share — encode bouquet config into URL params so the link is self-contained.
+  const handleShare = useCallback(async () => {
+    const params = new URLSearchParams({
+      name:    config.recipient.name,
+      occ:     occasion,
+      mood,
+      style:   config.artStyle,
+      variant: String(variant),
+      wrap:    wrapStyle,
+      ...(city                             && { city }),
+      ...(config.recipient.relationship    && { rel: config.recipient.relationship }),
+      ...(config.recipient.favouriteColour && { colour: config.recipient.favouriteColour }),
+    });
+    const url = `${window.location.origin}/bouquet?${params.toString()}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      setShareStatus("copied");
+      setTimeout(() => setShareStatus("idle"), 2500);
+    } catch {
+      if (navigator.share) {
+        await navigator.share({ title: `A bouquet for ${config.recipient.name}`, url });
+      } else {
+        setShareStatus("error");
+        setTimeout(() => setShareStatus("idle"), 2500);
+      }
+    }
+  }, [config, occasion, mood, variant, wrapStyle, city]);
+
+  const shareLabel =
+    shareStatus === "copied" ? "✓ Link copied!" :
+    shareStatus === "error"  ? "Copy failed" :
+    "Share 💌";
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-secondary/20">
       <nav className="sticky top-0 z-20 backdrop-blur-md bg-background/70 border-b border-border/40">
@@ -111,8 +145,17 @@ const BouquetResult = () => {
             <span>New bouquet</span>
           </button>
           <h1 className="text-base font-serif italic text-foreground/80 tracking-wide">Bloom Studio</h1>
-          <button className="px-4 py-1.5 text-xs font-sans rounded-full bg-primary text-primary-foreground hover:opacity-90 transition-opacity">
-            Share 💌
+          <button
+            onClick={handleShare}
+            className={`px-4 py-1.5 text-xs font-sans rounded-full transition-all ${
+              shareStatus === "copied"
+                ? "bg-green-600 text-white"
+                : shareStatus === "error"
+                ? "bg-destructive text-destructive-foreground"
+                : "bg-primary text-primary-foreground hover:opacity-90"
+            }`}
+          >
+            {shareLabel}
           </button>
         </div>
       </nav>

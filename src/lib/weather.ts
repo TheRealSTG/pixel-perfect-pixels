@@ -1,85 +1,83 @@
+// Weather-aware greeting for the landing page.
+// Gracefully falls back at every step — no greeting is better than a broken one.
+
 interface WeatherData {
+  description: string;
+  temp: number;
   city: string;
-  temperature: number;
-  condition: string;
-  emoji: string;
 }
 
-const weatherCodeToCondition: Record<number, { condition: string; emoji: string }> = {
-  0: { condition: "clear skies", emoji: "☀️" },
-  1: { condition: "mostly clear skies", emoji: "🌤️" },
-  2: { condition: "partly cloudy skies", emoji: "⛅" },
-  3: { condition: "overcast skies", emoji: "☁️" },
-  45: { condition: "foggy weather", emoji: "🌫️" },
-  48: { condition: "foggy weather", emoji: "🌫️" },
-  51: { condition: "light drizzle", emoji: "🌦️" },
-  53: { condition: "drizzle", emoji: "🌦️" },
-  55: { condition: "heavy drizzle", emoji: "🌧️" },
-  61: { condition: "light rain", emoji: "🌧️" },
-  63: { condition: "rain", emoji: "🌧️" },
-  65: { condition: "heavy rain", emoji: "🌧️" },
-  71: { condition: "light snow", emoji: "🌨️" },
-  73: { condition: "snow", emoji: "❄️" },
-  75: { condition: "heavy snow", emoji: "❄️" },
-  80: { condition: "rain showers", emoji: "🌦️" },
-  81: { condition: "rain showers", emoji: "🌧️" },
-  82: { condition: "heavy rain showers", emoji: "⛈️" },
-  95: { condition: "thunderstorms", emoji: "⛈️" },
-};
-
-function getDayOfWeek(): string {
-  return new Intl.DateTimeFormat("en-US", { weekday: "long" }).format(new Date());
-}
-
-function getGreetingText(data: WeatherData): string {
-  const day = getDayOfWeek();
-  return `A little colour for a ${data.condition.split(" ")[0]} ${day} in ${data.city} ${data.emoji}`;
-}
-
-function getFallbackGreeting(): string {
-  const day = getDayOfWeek();
-  const greetings = [
-    `A little colour for your ${day} ✨`,
-    `Something beautiful for your ${day} 🌸`,
-    `Brighten up this lovely ${day} 💐`,
-  ];
-  return greetings[Math.floor(Math.random() * greetings.length)];
-}
-
-async function reverseGeocode(lat: number, lon: number): Promise<string> {
+async function fetchWeather(lat: number, lon: number): Promise<WeatherData | null> {
   try {
-    const res = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&zoom=10`
-    );
+    // Open-Meteo is free, no API key required
+    const url = new URL("https://api.open-meteo.com/v1/forecast");
+    url.searchParams.set("latitude",  String(lat));
+    url.searchParams.set("longitude", String(lon));
+    url.searchParams.set("current_weather", "true");
+
+    const res = await fetch(url.toString(), { signal: AbortSignal.timeout(4000) });
+    if (!res.ok) return null;
     const data = await res.json();
-    return data.address?.city || data.address?.town || data.address?.village || "your city";
+    const wmo  = data?.current_weather?.weathercode ?? -1;
+    const temp = Math.round(data?.current_weather?.temperature ?? 0);
+
+    // Reverse-geocode city name from coordinates (nominatim, no key)
+    const geo  = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`,
+      { headers: { "Accept-Language": "en" }, signal: AbortSignal.timeout(3000) }
+    );
+    const geoData = geo.ok ? await geo.json() : null;
+    const city = geoData?.address?.city
+      || geoData?.address?.town
+      || geoData?.address?.village
+      || geoData?.address?.county
+      || "";
+
+    return { description: wmoToDescription(wmo), temp, city };
   } catch {
-    return "your city";
+    return null;
   }
 }
 
-export async function getWeatherGreeting(): Promise<string> {
-  try {
-    const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-      navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 });
-    });
+function wmoToDescription(code: number): string {
+  if (code <= 1)  return "clear skies";
+  if (code <= 3)  return "a cloudy day";
+  if (code <= 49) return "foggy weather";
+  if (code <= 59) return "drizzly weather";
+  if (code <= 69) return "rainy weather";
+  if (code <= 79) return "snowy weather";
+  if (code <= 84) return "rain showers";
+  if (code <= 99) return "stormy weather";
+  return "interesting weather";
+}
 
-    const { latitude, longitude } = position.coords;
+function getGreeting(weather: WeatherData): string {
+  const { description, temp, city } = weather;
+  const cityStr = city ? ` in ${city}` : "";
+  const hour = new Date().getHours();
+  const timeStr = hour < 12 ? "morning" : hour < 17 ? "afternoon" : "evening";
 
-    const [weatherRes, city] = await Promise.all([
-      fetch(
-        `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`
-      ),
-      reverseGeocode(latitude, longitude),
-    ]);
+  const templates = [
+    `A little colour for ${description}${cityStr} 🌸`,
+    `Good ${timeStr}${cityStr} — ${temp}° and bouquet weather ✨`,
+    `Brighten someone's ${description}${cityStr} today 💐`,
+  ];
+  return templates[Math.floor(Math.random() * templates.length)];
+}
 
-    const weatherData = await weatherRes.json();
-    const code = weatherData.current_weather?.weathercode ?? 0;
-    const temp = Math.round(weatherData.current_weather?.temperature ?? 20);
-    const info = weatherCodeToCondition[code] || { condition: "beautiful weather", emoji: "🌸" };
+export async function getWeatherGreeting(): Promise<string | null> {
+  return new Promise((resolve) => {
+    if (!navigator.geolocation) { resolve(null); return; }
 
-    return getGreetingText({ city, temperature: temp, ...info });
-  } catch {
-    return getFallbackGreeting();
-  }
+    const timeout = setTimeout(() => resolve(null), 6000);
+
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        clearTimeout(timeout);
+        const weather = await fetchWeather(pos.coords.latitude, pos.coords.longitude);
+        resolve(weather ? getGreeting(weather) : null);
+      },
+      () => { clearTimeout(timeout); resolve(null); }
+    );
+  });
 }

@@ -45,7 +45,7 @@ const CreatePage = () => {
         >
           ← {currentStep === 0 ? "Home" : "Back"}
         </button>
-        <h1 className="text-xl font-serif font-semibold text-foreground">Bouquet</h1>
+        <h1 className="text-xl font-serif font-semibold text-foreground">Bloom Studio</h1>
         <div className="w-12" />
       </nav>
 

@@ -4,43 +4,28 @@
 @tailwind components;
 @tailwind utilities;
 
-@keyframes bloom-pop {
-  0% { transform: scale(0.3); opacity: 1; }
-  100% { transform: scale(1); opacity: 1; }
-}
-
 @layer base {
   :root {
     --background: 30 33% 97%;
     --foreground: 20 20% 20%;
-
     --card: 30 30% 95%;
     --card-foreground: 20 20% 20%;
-
     --popover: 30 33% 97%;
     --popover-foreground: 20 20% 20%;
-
     --primary: 152 28% 40%;
     --primary-foreground: 30 33% 97%;
-
     --secondary: 350 30% 88%;
     --secondary-foreground: 350 30% 30%;
-
     --muted: 30 20% 92%;
     --muted-foreground: 20 10% 50%;
-
     --accent: 350 40% 65%;
     --accent-foreground: 30 33% 97%;
-
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
-
     --border: 30 20% 88%;
     --input: 30 20% 88%;
     --ring: 152 28% 40%;
-
     --radius: 0.75rem;
-
     --sidebar-background: 30 30% 95%;
     --sidebar-foreground: 20 20% 20%;
     --sidebar-primary: 152 28% 40%;
@@ -49,8 +34,6 @@
     --sidebar-accent-foreground: 20 20% 20%;
     --sidebar-border: 30 20% 88%;
     --sidebar-ring: 152 28% 40%;
-
-    /* Custom tokens */
     --cream: 35 40% 95%;
     --sage: 152 28% 40%;
     --sage-light: 152 25% 85%;
@@ -91,23 +74,10 @@
   }
 }
 
-/* Hide internal flower stems — external curved stems handle this */
-.bouquet-stem-internal {
-  display: none;
-}
-
 @layer base {
-  * {
-    @apply border-border;
-  }
-
-  body {
-    @apply bg-background text-foreground font-sans antialiased;
-  }
-
-  h1, h2, h3, h4 {
-    @apply font-serif;
-  }
+  * { @apply border-border; }
+  body { @apply bg-background text-foreground font-sans antialiased; }
+  h1, h2, h3, h4 { @apply font-serif; }
 }
 
 @layer utilities {
@@ -116,68 +86,27 @@
   }
 }
 
-/* Animations */
+/* ── Animations ────────────────────────────────────────── */
 @keyframes fade-up {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes gentle-float {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
+  50%       { transform: translateY(-8px); }
 }
 
 @keyframes petal-drift {
-  0% { transform: rotate(0deg) translateX(0); }
-  25% { transform: rotate(5deg) translateX(3px); }
-  75% { transform: rotate(-3deg) translateX(-2px); }
-  100% { transform: rotate(0deg) translateX(0); }
+  0%   { transform: rotate(0deg)  translateX(0); }
+  25%  { transform: rotate(5deg)  translateX(3px); }
+  75%  { transform: rotate(-3deg) translateX(-2px); }
+  100% { transform: rotate(0deg)  translateX(0); }
 }
 
-.animate-fade-up {
-  animation: fade-up 0.6s ease-out forwards;
-}
-
-.animate-fade-up-delay-1 {
-  animation: fade-up 0.6s ease-out 0.15s forwards;
-  opacity: 0;
-}
-
-.animate-fade-up-delay-2 {
-  animation: fade-up 0.6s ease-out 0.3s forwards;
-  opacity: 0;
-}
-
-.animate-fade-up-delay-3 {
-  animation: fade-up 0.6s ease-out 0.45s forwards;
-  opacity: 0;
-}
-
-.animate-gentle-float {
-  animation: gentle-float 4s ease-in-out infinite;
-}
-
-.animate-petal-drift {
-  animation: petal-drift 6s ease-in-out infinite;
-}
-
-@keyframes bouquet-pop {
-  0% {
-    opacity: 0;
-    transform: scale(0.3);
-  }
-  70% {
-    opacity: 1;
-    transform: scale(1.08);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
+.animate-fade-up           { animation: fade-up 0.6s ease-out forwards; }
+.animate-fade-up-delay-1   { animation: fade-up 0.6s ease-out 0.15s forwards; opacity: 0; }
+.animate-fade-up-delay-2   { animation: fade-up 0.6s ease-out 0.30s forwards; opacity: 0; }
+.animate-fade-up-delay-3   { animation: fade-up 0.6s ease-out 0.45s forwards; opacity: 0; }
+.animate-gentle-float      { animation: gentle-float 4s ease-in-out infinite; }
+.animate-petal-drift       { animation: petal-drift 6s ease-in-out infinite; }
